@@ -3,16 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ancient Mixed Fraction Calculator</title>
+  <title>Fraction Plus Calculator</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --lcd-bg: #8ba888;
+      --bg: #1e293b;
+      --calc-body: #d1d5db;
+      --lcd-bg: #82b1b8;
       --lcd-text: #0f2511;
+      
+      --btn-whole: #94a3b8;
+      --btn-num: #cbd5e1;
+      --btn-den: #e2e8f0;
+      
+      --btn-op: #64748b;
+      --btn-equals: #f97316;
       --btn-clear: #ef4444;
-      --input-bg: #0f172a;
-      --text-light: #f8fafc;
+      --btn-active: #3b82f6;
     }
 
     * {
@@ -28,258 +34,393 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 16px;
+      padding: 12px;
     }
 
     .calculator {
-      background: var(--card);
+      background: var(--calc-body);
       width: 100%;
-      max-width: 380px;
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-      border: 2px solid #475569;
+      max-width: 400px;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      border: 3px solid #9ca3af;
     }
 
-    /* Screen Display */
+    /* Screen */
     .screen {
       background: var(--lcd-bg);
       color: var(--lcd-text);
       font-family: 'Courier New', Courier, monospace;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      margin-bottom: 20px;
-      border: 3px solid #5b7058;
+      border-radius: 8px;
+      padding: 12px;
+      border: 3px solid #475569;
+      margin-bottom: 12px;
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 90px;
     }
 
-    .screen-label {
-      font-size: 0.7rem;
+    .screen-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
       font-weight: bold;
-      margin-bottom: 4px;
       opacity: 0.85;
-      text-transform: uppercase;
-      letter-spacing: 1px;
     }
 
     .screen-main {
       font-size: 2.2rem;
       font-weight: 900;
-      min-height: 48px;
-      word-break: break-all;
+      text-align: right;
+      letter-spacing: 1px;
     }
 
     .screen-sub {
+      font-size: 0.85rem;
+      font-weight: bold;
+      text-align: right;
+      opacity: 0.85;
+    }
+
+    /* Keypad Grid Layout */
+    .keypad-wrapper {
+      display: grid;
+      grid-template-columns: 2fr 3fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 4px;
+      color: #334155;
+    }
+
+    /* Column 1: Whole Numbers */
+    .whole-column {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      background: #b0b7c0;
+      padding: 8px;
+      border-radius: 10px;
+    }
+
+    /* Column 2: Stacked Numerator/Denominator */
+    .fraction-column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #b0b7c0;
+      padding: 8px;
+      border-radius: 10px;
+    }
+
+    .num-grid, .den-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+    }
+
+    .btn {
+      padding: 10px 0;
       font-size: 1.1rem;
       font-weight: bold;
-      margin-top: 6px;
-      color: #1a3a1d;
+      border: 1px solid #64748b;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #475569;
+      color: #0f172a;
+      transition: background 0.1s, transform 0.05s;
     }
 
-    /* Equation Builder */
-    .equation-builder {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 20px;
+    .btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #475569;
     }
 
-    .fraction-input {
-      display: flex;
-      align-items: center;
+    .btn-whole { background: var(--btn-whole); color: white; }
+    .btn-num { background: var(--btn-num); }
+    .btn-den { background: var(--btn-den); }
+    .btn-clear { background: var(--btn-clear); color: white; grid-column: span 2; }
+    .btn-back { background: #cbd5e1; grid-column: span 2; }
+    .btn-wide { grid-column: span 2; }
+
+    /* Bottom Operators Row */
+    .operators-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
       gap: 6px;
     }
 
-    .whole-input {
-      width: 48px;
-      padding: 12px 4px;
-      border-radius: 8px;
-      border: 1px solid #475569;
-      background: var(--input-bg);
-      color: var(--text-light);
-      font-size: 1.2rem;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    .stacked-fraction {
+    .btn-op { background: var(--btn-op); color: white; font-size: 1.3rem; }
+    .btn-equals { background: var(--btn-equals); color: white; font-size: 1.4rem; }
+    
+    /* Config Panel */
+    .config-row {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
-      width: 52px;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
     }
 
-    .stacked-fraction input {
-      width: 100%;
-      padding: 6px 2px;
+    .config-select {
+      flex: 1;
+      padding: 6px;
       border-radius: 6px;
-      border: 1px solid #475569;
-      background: var(--input-bg);
-      color: var(--text-light);
-      font-size: 1.1rem;
+      border: 1px solid #64748b;
+      background: #f8fafc;
       font-weight: bold;
-      text-align: center;
+      font-size: 0.8rem;
     }
 
-    .stacked-fraction hr {
-      border: 1px solid #94a3b8;
-    }
-
-    select.operator {
-      padding: 10px 4px;
-      border-radius: 8px;
-      border: 1px solid #475569;
-      background: #334155;
-      color: #38bdf8;
-      font-size: 1.4rem;
+    .btn-toggle {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #64748b;
+      background: #64748b;
+      color: white;
+      font-size: 0.8rem;
       font-weight: bold;
       cursor: pointer;
     }
 
-    .btn-clear {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      background: var(--btn-clear);
-      color: #ffffff;
-      box-shadow: 0 4px 0 #0f172a;
-    }
-
-    .btn-clear:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #0f172a;
+    .btn-toggle.active {
+      background: var(--btn-active);
     }
   </style>
 </head>
 <body>
 
   <div class="calculator">
-    <!-- Screen Display -->
+    <!-- Screen -->
     <div class="screen">
-      <div class="screen-label">Mixed Fraction Result</div>
-      <div id="lcdMain" class="screen-main">1 1/3</div>
-      <div id="lcdSub" class="screen-sub">Simple Fraction: 4/3</div>
+      <div class="screen-top">
+        <span id="activeFieldTag">FIELD: WHOLE</span>
+        <span id="baseTag">BASE: 60</span>
+      </div>
+      <div id="lcdMain" class="screen-main">0</div>
+      <div id="lcdSub" class="screen-sub">Simple: 0</div>
     </div>
 
-    <!-- Inputs -->
-    <div class="equation-builder">
-      <!-- Fraction 1 -->
-      <div class="fraction-input">
-        <input type="number" id="w1" class="whole-input" placeholder="W" value="1" min="0" oninput="calculate()">
-        <div class="stacked-fraction">
-          <input type="number" id="n1" placeholder="N" value="2" min="0" oninput="calculate()">
-          <hr>
-          <input type="number" id="d1" placeholder="D" value="6" min="1" oninput="calculate()">
-        </div>
-      </div>
-
-      <!-- Operator -->
-      <select id="op" class="operator" onchange="calculate()">
-        <option value="+">+</option>
-        <option value="-">−</option>
-        <option value="×">×</option>
-        <option value="÷">÷</option>
+    <!-- Controls -->
+    <div class="config-row">
+      <button id="btnMixToggle" class="btn-toggle active" onclick="toggleMixMode()">Ancient Scale: ON</button>
+      <select id="baseSystem" class="config-select" onchange="calculate()">
+        <option value="60">Base-60 (Ghatis / Mins)</option>
+        <option value="360">Base-360 (Degrees)</option>
+        <option value="24">Base-24 (Hours)</option>
+        <option value="1">Base-1 (Standard Fraction)</option>
       </select>
-
-      <!-- Fraction 2 -->
-      <div class="fraction-input">
-        <input type="number" id="w2" class="whole-input" placeholder="W" value="0" min="0" oninput="calculate()">
-        <div class="stacked-fraction">
-          <input type="number" id="n2" placeholder="N" value="0" min="0" oninput="calculate()">
-          <hr>
-          <input type="number" id="d2" placeholder="D" value="1" min="1" oninput="calculate()">
-        </div>
-      </div>
     </div>
 
-    <button class="btn-clear" onclick="clearInputs()">Clear All</button>
+    <!-- Split Keypad Layout -->
+    <div class="keypad-wrapper">
+      
+      <!-- Whole Number Section (Blue-Gray) -->
+      <div>
+        <div class="section-label">Whole Number</div>
+        <div class="whole-column">
+          <button class="btn btn-clear" onclick="clearAll()">C</button>
+          
+          <button class="btn btn-whole" onclick="appendDigit('w', '1')">1</button>
+          <button class="btn btn-whole" onclick="appendDigit('w', '2')">2</button>
+          <button class="btn btn-whole" onclick="appendDigit('w', '3')">3</button>
+          <button class="btn btn-whole" onclick="appendDigit('w', '4')">4</button>
+          <button class="btn btn-whole" onclick="appendDigit('w', '5')">5</button>
+          <button class="btn btn-whole" onclick="appendDigit('w', '6')">6</button>
+          <button class="btn btn-whole" onclick="appendDigit('w', '7')">7</button>
+          <button class="btn btn-whole" onclick="appendDigit('w', '8')">8</button>
+          <button class="btn btn-whole" onclick="appendDigit('w', '9')">9</button>
+          <button class="btn btn-whole" onclick="appendDigit('w', '0')">0</button>
+          
+          <button class="btn btn-back" onclick="backspace('w')">⌫ W</button>
+        </div>
+      </div>
+
+      <!-- Fraction Section (Stacked Light Gray) -->
+      <div class="fraction-column">
+        <!-- Numerator -->
+        <div>
+          <div class="section-label">Numerator (Top)</div>
+          <div class="num-grid">
+            <button class="btn btn-num" onclick="appendDigit('n', '1')">1</button>
+            <button class="btn btn-num" onclick="appendDigit('n', '2')">2</button>
+            <button class="btn btn-num" onclick="appendDigit('n', '3')">3</button>
+            <button class="btn btn-num" onclick="appendDigit('n', '4')">4</button>
+            <button class="btn btn-num" onclick="appendDigit('n', '5')">5</button>
+            <button class="btn btn-num" onclick="appendDigit('n', '6')">6</button>
+            <button class="btn btn-num" onclick="appendDigit('n', '7')">7</button>
+            <button class="btn btn-num" onclick="appendDigit('n', '8')">8</button>
+            <button class="btn btn-num" onclick="appendDigit('n', '9')">9</button>
+            <button class="btn btn-num btn-wide" onclick="appendDigit('n', '0')">0</button>
+            <button class="btn btn-num" onclick="backspace('n')">⌫</button>
+          </div>
+        </div>
+
+        <hr style="border: 1px solid #64748b;">
+
+        <!-- Denominator -->
+        <div>
+          <div class="section-label">Denominator (Bottom)</div>
+          <div class="den-grid">
+            <button class="btn btn-den" onclick="appendDigit('d', '1')">1</button>
+            <button class="btn btn-den" onclick="appendDigit('d', '2')">2</button>
+            <button class="btn btn-den" onclick="appendDigit('d', '3')">3</button>
+            <button class="btn btn-den" onclick="appendDigit('d', '4')">4</button>
+            <button class="btn btn-den" onclick="appendDigit('d', '5')">5</button>
+            <button class="btn btn-den" onclick="appendDigit('d', '6')">6</button>
+            <button class="btn btn-den" onclick="appendDigit('d', '7')">7</button>
+            <button class="btn btn-den" onclick="appendDigit('d', '8')">8</button>
+            <button class="btn btn-den" onclick="appendDigit('d', '9')">9</button>
+            <button class="btn btn-den btn-wide" onclick="appendDigit('d', '0')">0</button>
+            <button class="btn btn-den" onclick="backspace('d')">⌫</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Operators -->
+    <div class="operators-row">
+      <button class="btn btn-op" onclick="setOperator('+')">+</button>
+      <button class="btn btn-op" onclick="setOperator('-')">−</button>
+      <button class="btn btn-op" onclick="setOperator('×')">×</button>
+      <button class="btn btn-op" onclick="setOperator('÷')">÷</button>
+      <button class="btn btn-equals" onclick="calculate()">=</button>
+    </div>
   </div>
 
   <script>
+    let activeFrac = 1; // 1 or 2
+    let currentOp = '';
+    let useAncientScale = true;
+
+    let f1 = { w: '', n: '12', d: '35' };
+    let f2 = { w: '', n: '', d: '' };
+
     function gcd(a, b) {
       return b === 0 ? Math.abs(a) : gcd(b, a % b);
     }
 
-    function clearInputs() {
-      document.getElementById('w1').value = '';
-      document.getElementById('n1').value = '';
-      document.getElementById('d1').value = '';
-      document.getElementById('w2').value = '';
-      document.getElementById('n2').value = '';
-      document.getElementById('d2').value = '';
+    function toggleMixMode() {
+      useAncientScale = !useAncientScale;
+      document.getElementById('btnMixToggle').classList.toggle('active', useAncientScale);
+      document.getElementById('btnMixToggle').innerText = useAncientScale ? "Ancient Scale: ON" : "Ancient Scale: OFF";
       calculate();
     }
 
+    function appendDigit(type, digit) {
+      let target = activeFrac === 1 ? f1 : f2;
+      target[type] += digit;
+      
+      document.getElementById('activeFieldTag').innerText = `EDITING: F${activeFrac} (${type.toUpperCase()})`;
+      calculate();
+    }
+
+    function backspace(type) {
+      let target = activeFrac === 1 ? f1 : f2;
+      target[type] = target[type].slice(0, -1);
+      calculate();
+    }
+
+    function clearAll() {
+      f1 = { w: '', n: '', d: '' };
+      f2 = { w: '', n: '', d: '' };
+      activeFrac = 1;
+      currentOp = '';
+      document.getElementById('activeFieldTag').innerText = "FIELD: WHOLE";
+      document.getElementById('lcdMain').innerText = '0';
+      document.getElementById('lcdSub').innerText = 'Simple: 0';
+    }
+
+    function setOperator(op) {
+      currentOp = op;
+      activeFrac = 2;
+      document.getElementById('activeFieldTag').innerText = `OPERATOR: ${op} (ENTER F2)`;
+    }
+
     function calculate() {
-      const w1 = parseInt(document.getElementById('w1').value) || 0;
-      const n1 = parseInt(document.getElementById('n1').value) || 0;
-      const d1 = parseInt(document.getElementById('d1').value) || 1;
+      const base = parseInt(document.getElementById('baseSystem').value) || 60;
+      document.getElementById('baseTag').innerText = `BASE: ${base}`;
 
-      const w2 = parseInt(document.getElementById('w2').value) || 0;
-      const n2 = parseInt(document.getElementById('n2').value) || 0;
-      const d2 = parseInt(document.getElementById('d2').value) || 1;
+      const w1 = parseInt(f1.w) || 0;
+      const n1 = parseInt(f1.n) || 0;
+      const d1 = parseInt(f1.d) || 1;
 
-      const op = document.getElementById('op').value;
-
-      if (d1 === 0 || d2 === 0) {
+      if (d1 === 0) {
         document.getElementById('lcdMain').innerText = "Error";
         document.getElementById('lcdSub').innerText = "Denominator cannot be 0";
         return;
       }
 
-      // Convert whole + fraction into improper numerator
-      const num1 = w1 * d1 + n1;
-      const num2 = w2 * d2 + n2;
+      let totalNum = w1 * d1 + n1;
+      let totalDen = d1;
 
-      let resNum = 0;
-      let resDen = 1;
+      // Handle binary operation if F2 is provided
+      if (currentOp && (f2.n || f2.w)) {
+        const w2 = parseInt(f2.w) || 0;
+        const n2 = parseInt(f2.n) || 0;
+        const d2 = parseInt(f2.d) || 1;
 
-      if (op === '+') {
-        resNum = num1 * d2 + num2 * d1;
-        resDen = d1 * d2;
-      } else if (op === '-') {
-        resNum = num1 * d2 - num2 * d1;
-        resDen = d1 * d2;
-      } else if (op === '×') {
-        resNum = num1 * num2;
-        resDen = d1 * d2;
-      } else if (op === '÷') {
-        if (num2 === 0) {
+        if (d2 === 0) {
           document.getElementById('lcdMain').innerText = "Error";
-          document.getElementById('lcdSub').innerText = "Cannot divide by 0";
           return;
         }
-        resNum = num1 * d2;
-        resDen = d1 * num2;
+
+        const num2 = w2 * d2 + n2;
+
+        if (currentOp === '+') { totalNum = totalNum * d2 + num2 * totalDen; totalDen = totalDen * d2; }
+        if (currentOp === '-') { totalNum = totalNum * d2 - num2 * totalDen; totalDen = totalDen * d2; }
+        if (currentOp === '×') { totalNum = totalNum * num2; totalDen = totalDen * d2; }
+        if (currentOp === '÷') { totalNum = totalNum * d2; totalDen = totalDen * num2; }
       }
 
-      // Simplify using GCD
-      const common = gcd(resNum, resDen);
-      let simpNum = resNum / common;
-      let simpDen = resDen / common;
+      // Simplify basic fraction
+      const common = gcd(totalNum, totalDen);
+      let simpNum = totalNum / common;
+      let simpDen = totalDen / common;
 
-      // Build display outputs
-      let mixedDisplay = "";
-      if (Math.abs(simpNum) >= simpDen && simpDen !== 1) {
-        const wholePart = Math.trunc(simpNum / simpDen);
-        const remNum = Math.abs(simpNum) % simpDen;
-        mixedDisplay = remNum === 0 ? `${wholePart}` : `${wholePart} ${remNum}/${simpDen}`;
+      let mainOutput = "";
+      let subOutput = `Simple Fraction: ${simpNum}/${simpDen}`;
+
+      // Mixed Fraction Calculation
+      if (simpNum >= simpDen) {
+        // Standard Mixed Fraction (Top bigger than bottom)
+        const whole = Math.floor(simpNum / simpDen);
+        const rem = simpNum % simpDen;
+        mainOutput = rem === 0 ? `${whole}` : `${whole} ${rem}/${simpDen}`;
+      } else if (useAncientScale && base > 1) {
+        // Ancient Sub-Unit Scaling for Proper Fractions (e.g., 12/35)
+        const scaledTotal = simpNum * base;
+        const wholeSub = Math.floor(scaledTotal / simpDen);
+        const remSub = scaledTotal % simpDen;
+        const subCommon = gcd(remSub, simpDen);
+
+        const label = base === 60 ? "Ghatis/Mins" : base === 360 ? "°" : "Hrs";
+        
+        if (remSub === 0) {
+          mainOutput = `${wholeSub} ${label}`;
+        } else {
+          mainOutput = `${wholeSub} ${remSub/subCommon}/${simpDen/subCommon} ${label}`;
+        }
+        subOutput = `Exact: ${simpNum}/${simpDen} (Base-${base} Mixed)`;
       } else {
-        mixedDisplay = simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`;
+        mainOutput = `${simpNum}/${simpDen}`;
       }
 
-      const simpleDisplay = simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`;
-
-      document.getElementById('lcdMain').innerText = mixedDisplay;
-      document.getElementById('lcdSub').innerText = `Simple Fraction: ${simpleDisplay}`;
+      document.getElementById('lcdMain').innerText = mainOutput;
+      document.getElementById('lcdSub').innerText = subOutput;
     }
 
+    // Initial calculation on load
     calculate();
   </script>
 </body>
