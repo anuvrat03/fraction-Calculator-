@@ -3,74 +3,225 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Colorful Fraction Calculator</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Fraction Calculator</title>
+  <style>
+    :root {
+      --calc-body: #1e1e2e;
+      --screen-bg: #8ba888;
+      --screen-text: #0f2511;
+      --num-btn: #313244;
+      --num-text: #cdd6f4;
+      --op-btn: #ff9e64;
+      --mode-btn: #bb9af7;
+      --action-btn: #f7768e;
+      --equals-btn: #9ece6a;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Courier New', Courier, monospace, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0f0f17;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+
+    .calculator {
+      background: var(--calc-body);
+      width: 100%;
+      max-width: 360px;
+      border-radius: 28px;
+      padding: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+      border: 4px solid #45475a;
+    }
+
+    /* Screen display styling */
+    .lcd-screen {
+      background: var(--screen-bg);
+      color: var(--screen-text);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: right;
+      margin-bottom: 20px;
+      border: 3px solid #5b7058;
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.4);
+    }
+
+    .screen-header {
+      font-size: 0.75rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      opacity: 0.85;
+    }
+
+    .screen-main {
+      font-size: 2.2rem;
+      font-weight: 900;
+      min-height: 45px;
+      letter-spacing: 1px;
+    }
+
+    .screen-sub {
+      font-size: 0.85rem;
+      margin-top: 4px;
+      min-height: 18px;
+      font-weight: bold;
+    }
+
+    /* Mode selector bar */
+    .mode-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: #45475a;
+      color: #cdd6f4;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .mode-btn.active {
+      background: var(--mode-btn);
+      color: #11111b;
+    }
+
+    /* Keypad Grid */
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button.key {
+      padding: 16px 0;
+      font-size: 1.25rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      background: var(--num-btn);
+      color: var(--num-text);
+      box-shadow: 0 4px 0 #181825;
+      transition: transform 0.05s ease;
+    }
+
+    button.key:active {
+      transform: translateY(4px);
+      box-shadow: none;
+    }
+
+    button.key.operator { background: var(--op-btn); color: #11111b; }
+    button.key.action { background: var(--action-btn); color: #11111b; }
+    button.key.equals { background: var(--equals-btn); color: #11111b; grid-column: span 2; }
+    button.key.slash { background: #7aa2f7; color: #11111b; }
+
+    /* Track mode form layout */
+    .track-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field label {
+      color: #cdd6f4;
+      font-size: 0.8rem;
+    }
+
+    .field input {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      background: #313244;
+      color: #cdd6f4;
+    }
+
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
-  <div class="calculator-card">
-    <header>
-      <h1>Fraction Calculator</h1>
-      <div class="mode-toggle">
-        <button id="calcModeBtn" class="mode-btn active" onclick="setMode('calculator')">Standard</button>
-        <button id="trackModeBtn" class="mode-btn" onclick="setMode('track')">Track / Distance</button>
+
+  <div class="calculator">
+    <!-- LCD Screen Display -->
+    <div class="lcd-screen">
+      <div class="screen-header">
+        <span id="modeLabel">STD MODE</span>
+        <span id="formatLabel">FMT: SIMPLE</span>
       </div>
-    </header>
+      <div id="lcdMain" class="screen-main">0</div>
+      <div id="lcdSub" class="screen-sub">Enter expression</div>
+    </div>
 
-    <!-- Display Area -->
-    <section class="display-section">
-      <div class="result-label">RESULT</div>
-      <div id="mainResult" class="primary-display">13 / 150</div>
-      <div id="altResult" class="secondary-display">13 out of 150 parts</div>
-    </section>
+    <!-- Mode Selector -->
+    <div class="mode-row">
+      <button id="stdBtn" class="mode-btn active" onclick="setMode('std')">Standard</button>
+      <button id="trackBtn" class="mode-btn" onclick="setMode('track')">Track / Dist</button>
+      <button id="fmtBtn" class="mode-btn" onclick="toggleFormat()">Toggle Mix</button>
+    </div>
 
-    <!-- Controls Area -->
-    <section class="input-section">
-      <!-- Standard Calculator Inputs -->
-      <div id="calcInputs" class="input-group">
-        <div class="fraction-box">
-          <input type="number" id="num1" value="13" placeholder="Num">
-          <hr>
-          <input type="number" id="den1" value="150" placeholder="Den">
-        </div>
+    <!-- Standard Keypad -->
+    <div id="stdKeypad" class="keypad">
+      <button class="key action" onclick="clearCalc()">C</button>
+      <button class="key action" onclick="backspace()">⌫</button>
+      <button class="key slash" onclick="pressKey('/')">/</button>
+      <button class="key operator" onclick="pressKey('÷')">÷</button>
 
-        <select id="operator" onchange="calculate()">
-          <option value="÷">÷</option>
-          <option value="+">+</option>
-          <option value="-">−</option>
-          <option value="×">×</option>
-        </select>
+      <button class="key" onclick="pressKey('7')">7</button>
+      <button class="key" onclick="pressKey('8')">8</button>
+      <button class="key" onclick="pressKey('9')">9</button>
+      <button class="key operator" onclick="pressKey('×')">×</button>
 
-        <div class="fraction-box">
-          <input type="number" id="num2" value="1" placeholder="Num">
-          <hr>
-          <input type="number" id="den2" value="1" placeholder="Den">
-        </div>
+      <button class="key" onclick="pressKey('4')">4</button>
+      <button class="key" onclick="pressKey('5')">5</button>
+      <button class="key" onclick="pressKey('6')">6</button>
+      <button class="key operator" onclick="pressKey('-')">−</button>
+
+      <button class="key" onclick="pressKey('1')">1</button>
+      <button class="key" onclick="pressKey('2')">2</button>
+      <button class="key" onclick="pressKey('3')">3</button>
+      <button class="key operator" onclick="pressKey('+')">+</button>
+
+      <button class="key" onclick="pressKey('0')">0</button>
+      <button class="key slash" onclick="pressKey('_')">_</button>
+      <button class="key equals" onclick="evaluateFraction()">=</button>
+    </div>
+
+    <!-- Track Problem Inputs -->
+    <div id="trackKeypad" class="track-panel hidden">
+      <div class="field">
+        <label>Distance Covered (km)</label>
+        <input type="number" id="distInput" value="13" oninput="solveTrack()">
       </div>
-
-      <!-- Track Problem Inputs -->
-      <div id="trackInputs" class="input-group hidden">
-        <div class="field">
-          <label for="distance">Distance / Laps Covered</label>
-          <input type="number" id="distance" value="13" oninput="calculateTrack()">
-        </div>
-        <div class="field">
-          <label for="trackLength">Total Track Distance</label>
-          <input type="number" id="trackLength" value="150" oninput="calculateTrack()">
-        </div>
+      <div class="field">
+        <label>Total Track Distance (km)</label>
+        <input type="number" id="trackInput" value="150" oninput="solveTrack()">
       </div>
-
-      <!-- Actions -->
-      <div class="action-row">
-        <button id="formatBtn" class="toggle-btn" onclick="toggleFormat()">Format: Simple Fraction</button>
-        <button class="calc-btn" onclick="runCalculation()">Calculate</button>
-      </div>
-    </section>
-
-    <!-- Breakdown -->
-    <section class="step-section">
-      <h3>Step-by-Step Solution</h3>
-      <div id="stepDetails">13 ÷ 150 = 13/150</div>
-    </section>
+    </div>
   </div>
 
   <script src="script.js"></script>
