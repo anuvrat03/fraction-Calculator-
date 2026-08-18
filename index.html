@@ -11,14 +11,14 @@
       --lcd-bg: #82b1b8;
       --lcd-text: #0f2511;
       
-      --btn-whole: #94a3b8;
+      --btn-whole: #64748b;
       --btn-num: #cbd5e1;
       --btn-den: #e2e8f0;
       
-      --btn-op: #64748b;
+      --btn-op: #475569;
       --btn-equals: #f97316;
       --btn-clear: #ef4444;
-      --btn-active: #3b82f6;
+      --btn-active: #2563eb;
     }
 
     * {
@@ -47,7 +47,7 @@
       border: 3px solid #9ca3af;
     }
 
-    /* Screen */
+    /* Screen Display */
     .screen {
       background: var(--lcd-bg);
       color: var(--lcd-text);
@@ -59,8 +59,7 @@
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      min-height: 90px;
+      gap: 8px;
     }
 
     .screen-top {
@@ -71,18 +70,49 @@
       opacity: 0.85;
     }
 
-    .screen-main {
-      font-size: 2.2rem;
-      font-weight: 900;
-      text-align: right;
-      letter-spacing: 1px;
+    .display-inputs {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      min-height: 60px;
     }
 
-    .screen-sub {
-      font-size: 0.85rem;
+    .input-box {
+      background: rgba(255, 255, 255, 0.4);
+      border: 2px solid transparent;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 1.8rem;
+      font-weight: 900;
+      text-align: center;
+      min-width: 40px;
+    }
+
+    .input-box.active {
+      border-color: #0f2511;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .frac-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .frac-line {
+      width: 100%;
+      height: 3px;
+      background: var(--lcd-text);
+    }
+
+    .screen-result {
+      font-size: 1.1rem;
       font-weight: bold;
       text-align: right;
-      opacity: 0.85;
+      border-top: 1px dashed rgba(15, 37, 17, 0.4);
+      padding-top: 4px;
     }
 
     /* Keypad Grid Layout */
@@ -102,7 +132,6 @@
       color: #334155;
     }
 
-    /* Column 1: Whole Numbers */
     .whole-column {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -112,7 +141,6 @@
       border-radius: 10px;
     }
 
-    /* Column 2: Stacked Numerator/Denominator */
     .fraction-column {
       display: flex;
       flex-direction: column;
@@ -162,7 +190,6 @@
     .btn-op { background: var(--btn-op); color: white; font-size: 1.3rem; }
     .btn-equals { background: var(--btn-equals); color: white; font-size: 1.4rem; }
     
-    /* Config Panel */
     .config-row {
       display: flex;
       justify-content: space-between;
@@ -192,22 +219,31 @@
       cursor: pointer;
     }
 
-    .btn-toggle.active {
-      background: var(--btn-active);
-    }
+    .btn-toggle.active { background: var(--btn-active); }
   </style>
 </head>
 <body>
 
   <div class="calculator">
-    <!-- Screen -->
+    <!-- Screen Display -->
     <div class="screen">
       <div class="screen-top">
-        <span id="activeFieldTag">FIELD: WHOLE</span>
+        <span id="activeFieldTag">EDITING: WHOLE</span>
         <span id="baseTag">BASE: 60</span>
       </div>
-      <div id="lcdMain" class="screen-main">0</div>
-      <div id="lcdSub" class="screen-sub">Simple: 0</div>
+
+      <!-- Live Inputs -->
+      <div class="display-inputs">
+        <div id="boxW" class="input-box active">0</div>
+        <div class="frac-stack">
+          <div id="boxN" class="input-box">0</div>
+          <div class="frac-line"></div>
+          <div id="boxD" class="input-box">1</div>
+        </div>
+      </div>
+
+      <!-- Simplified Mixed Result -->
+      <div id="lcdResult" class="screen-result">Result = 0</div>
     </div>
 
     <!-- Controls -->
@@ -221,10 +257,10 @@
       </select>
     </div>
 
-    <!-- Split Keypad Layout -->
+    <!-- Keypads -->
     <div class="keypad-wrapper">
       
-      <!-- Whole Number Section (Blue-Gray) -->
+      <!-- Whole Number -->
       <div>
         <div class="section-label">Whole Number</div>
         <div class="whole-column">
@@ -245,9 +281,8 @@
         </div>
       </div>
 
-      <!-- Fraction Section (Stacked Light Gray) -->
+      <!-- Numerator & Denominator -->
       <div class="fraction-column">
-        <!-- Numerator -->
         <div>
           <div class="section-label">Numerator (Top)</div>
           <div class="num-grid">
@@ -267,7 +302,6 @@
 
         <hr style="border: 1px solid #64748b;">
 
-        <!-- Denominator -->
         <div>
           <div class="section-label">Denominator (Bottom)</div>
           <div class="den-grid">
@@ -288,7 +322,7 @@
 
     </div>
 
-    <!-- Bottom Operators -->
+    <!-- Operators -->
     <div class="operators-row">
       <button class="btn btn-op" onclick="setOperator('+')">+</button>
       <button class="btn btn-op" onclick="setOperator('-')">−</button>
@@ -299,12 +333,13 @@
   </div>
 
   <script>
-    let activeFrac = 1; // 1 or 2
+    let activeFrac = 1;
     let currentOp = '';
     let useAncientScale = true;
 
-    let f1 = { w: '', n: '12', d: '35' };
-    let f2 = { w: '', n: '', d: '' };
+    // Strict string inputs so "1" + "2" = "12"
+    let f1 = { w: "", n: "", d: "" };
+    let f2 = { w: "", n: "", d: "" };
 
     function gcd(a, b) {
       return b === 0 ? Math.abs(a) : gcd(b, a % b);
@@ -319,59 +354,72 @@
 
     function appendDigit(type, digit) {
       let target = activeFrac === 1 ? f1 : f2;
-      target[type] += digit;
       
-      document.getElementById('activeFieldTag').innerText = `EDITING: F${activeFrac} (${type.toUpperCase()})`;
+      // Append string character directly
+      target[type] = (target[type] || "") + String(digit);
+      
+      setActiveHighlight(type);
       calculate();
     }
 
     function backspace(type) {
       let target = activeFrac === 1 ? f1 : f2;
-      target[type] = target[type].slice(0, -1);
+      target[type] = (target[type] || "").slice(0, -1);
+      setActiveHighlight(type);
       calculate();
     }
 
+    function setActiveHighlight(type) {
+      document.getElementById('boxW').classList.toggle('active', type === 'w');
+      document.getElementById('boxN').classList.toggle('active', type === 'n');
+      document.getElementById('boxD').classList.toggle('active', type === 'd');
+      document.getElementById('activeFieldTag').innerText = `EDITING: F${activeFrac} (${type.toUpperCase()})`;
+    }
+
     function clearAll() {
-      f1 = { w: '', n: '', d: '' };
-      f2 = { w: '', n: '', d: '' };
+      f1 = { w: "", n: "", d: "" };
+      f2 = { w: "", n: "", d: "" };
       activeFrac = 1;
       currentOp = '';
-      document.getElementById('activeFieldTag').innerText = "FIELD: WHOLE";
-      document.getElementById('lcdMain').innerText = '0';
-      document.getElementById('lcdSub').innerText = 'Simple: 0';
+      setActiveHighlight('w');
+      calculate();
     }
 
     function setOperator(op) {
       currentOp = op;
       activeFrac = 2;
-      document.getElementById('activeFieldTag').innerText = `OPERATOR: ${op} (ENTER F2)`;
+      setActiveHighlight('w');
     }
 
     function calculate() {
       const base = parseInt(document.getElementById('baseSystem').value) || 60;
       document.getElementById('baseTag').innerText = `BASE: ${base}`;
 
+      // Update display text as strings
+      const current = activeFrac === 1 ? f1 : f2;
+      document.getElementById('boxW').innerText = current.w || '0';
+      document.getElementById('boxN').innerText = current.n || '0';
+      document.getElementById('boxD').innerText = current.d || '1';
+
       const w1 = parseInt(f1.w) || 0;
       const n1 = parseInt(f1.n) || 0;
       const d1 = parseInt(f1.d) || 1;
 
       if (d1 === 0) {
-        document.getElementById('lcdMain').innerText = "Error";
-        document.getElementById('lcdSub').innerText = "Denominator cannot be 0";
+        document.getElementById('lcdResult').innerText = "Error: Division by 0";
         return;
       }
 
       let totalNum = w1 * d1 + n1;
       let totalDen = d1;
 
-      // Handle binary operation if F2 is provided
       if (currentOp && (f2.n || f2.w)) {
         const w2 = parseInt(f2.w) || 0;
         const n2 = parseInt(f2.n) || 0;
         const d2 = parseInt(f2.d) || 1;
 
         if (d2 === 0) {
-          document.getElementById('lcdMain').innerText = "Error";
+          document.getElementById('lcdResult').innerText = "Error: Division by 0";
           return;
         }
 
@@ -383,22 +431,17 @@
         if (currentOp === '÷') { totalNum = totalNum * d2; totalDen = totalDen * num2; }
       }
 
-      // Simplify basic fraction
       const common = gcd(totalNum, totalDen);
       let simpNum = totalNum / common;
       let simpDen = totalDen / common;
 
       let mainOutput = "";
-      let subOutput = `Simple Fraction: ${simpNum}/${simpDen}`;
 
-      // Mixed Fraction Calculation
       if (simpNum >= simpDen) {
-        // Standard Mixed Fraction (Top bigger than bottom)
         const whole = Math.floor(simpNum / simpDen);
         const rem = simpNum % simpDen;
         mainOutput = rem === 0 ? `${whole}` : `${whole} ${rem}/${simpDen}`;
       } else if (useAncientScale && base > 1) {
-        // Ancient Sub-Unit Scaling for Proper Fractions (e.g., 12/35)
         const scaledTotal = simpNum * base;
         const wholeSub = Math.floor(scaledTotal / simpDen);
         const remSub = scaledTotal % simpDen;
@@ -406,21 +449,14 @@
 
         const label = base === 60 ? "Ghatis/Mins" : base === 360 ? "°" : "Hrs";
         
-        if (remSub === 0) {
-          mainOutput = `${wholeSub} ${label}`;
-        } else {
-          mainOutput = `${wholeSub} ${remSub/subCommon}/${simpDen/subCommon} ${label}`;
-        }
-        subOutput = `Exact: ${simpNum}/${simpDen} (Base-${base} Mixed)`;
+        mainOutput = remSub === 0 ? `${wholeSub} ${label}` : `${wholeSub} ${remSub/subCommon}/${simpDen/subCommon} ${label}`;
       } else {
         mainOutput = `${simpNum}/${simpDen}`;
       }
 
-      document.getElementById('lcdMain').innerText = mainOutput;
-      document.getElementById('lcdSub').innerText = subOutput;
+      document.getElementById('lcdResult').innerText = `Result = ${mainOutput}`;
     }
 
-    // Initial calculation on load
     calculate();
   </script>
 </body>
