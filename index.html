@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Colorful Fraction Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="calculator-card">
+    <header>
+      <h1>Fraction Calculator</h1>
+      <div class="mode-toggle">
+        <button id="calcModeBtn" class="mode-btn active" onclick="setMode('calculator')">Standard</button>
+        <button id="trackModeBtn" class="mode-btn" onclick="setMode('track')">Track / Distance</button>
+      </div>
+    </header>
+
+    <!-- Display Area -->
+    <section class="display-section">
+      <div class="result-label">RESULT</div>
+      <div id="mainResult" class="primary-display">13 / 150</div>
+      <div id="altResult" class="secondary-display">13 out of 150 parts</div>
+    </section>
+
+    <!-- Controls Area -->
+    <section class="input-section">
+      <!-- Standard Calculator Inputs -->
+      <div id="calcInputs" class="input-group">
+        <div class="fraction-box">
+          <input type="number" id="num1" value="13" placeholder="Num">
+          <hr>
+          <input type="number" id="den1" value="150" placeholder="Den">
+        </div>
+
+        <select id="operator" onchange="calculate()">
+          <option value="÷">÷</option>
+          <option value="+">+</option>
+          <option value="-">−</option>
+          <option value="×">×</option>
+        </select>
+
+        <div class="fraction-box">
+          <input type="number" id="num2" value="1" placeholder="Num">
+          <hr>
+          <input type="number" id="den2" value="1" placeholder="Den">
+        </div>
+      </div>
+
+      <!-- Track Problem Inputs -->
+      <div id="trackInputs" class="input-group hidden">
+        <div class="field">
+          <label for="distance">Distance / Laps Covered</label>
+          <input type="number" id="distance" value="13" oninput="calculateTrack()">
+        </div>
+        <div class="field">
+          <label for="trackLength">Total Track Distance</label>
+          <input type="number" id="trackLength" value="150" oninput="calculateTrack()">
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="action-row">
+        <button id="formatBtn" class="toggle-btn" onclick="toggleFormat()">Format: Simple Fraction</button>
+        <button class="calc-btn" onclick="runCalculation()">Calculate</button>
+      </div>
+    </section>
+
+    <!-- Breakdown -->
+    <section class="step-section">
+      <h3>Step-by-Step Solution</h3>
+      <div id="stepDetails">13 ÷ 150 = 13/150</div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
