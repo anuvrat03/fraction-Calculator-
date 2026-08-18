@@ -6,82 +6,81 @@
   <title>Fraction Calculator</title>
   <style>
     :root {
-      --calc-body: #1e1e2e;
-      --screen-bg: #8ba888;
-      --screen-text: #0f2511;
-      --num-btn: #313244;
-      --num-text: #cdd6f4;
-      --op-btn: #ff9e64;
-      --mode-btn: #bb9af7;
-      --action-btn: #f7768e;
-      --equals-btn: #9ece6a;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --lcd-bg: #8ba888;
+      --lcd-text: #0f2511;
+      --key-num: #334155;
+      --key-op: #f97316;
+      --key-action: #ef4444;
+      --key-equals: #22c55e;
+      --key-special: #3b82f6;
     }
 
     * {
       box-sizing: border-box;
-      font-family: 'Courier New', Courier, monospace, sans-serif;
       margin: 0;
       padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
-      background: #0f0f17;
+      background: var(--bg);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 15px;
+      padding: 16px;
     }
 
     .calculator {
-      background: var(--calc-body);
+      background: var(--card);
       width: 100%;
-      max-width: 360px;
-      border-radius: 28px;
+      max-width: 380px;
+      border-radius: 24px;
       padding: 20px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-      border: 4px solid #45475a;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      border: 2px solid #475569;
     }
 
-    /* Screen display styling */
-    .lcd-screen {
-      background: var(--screen-bg);
-      color: var(--screen-text);
+    .screen {
+      background: var(--lcd-bg);
+      color: var(--lcd-text);
+      font-family: 'Courier New', Courier, monospace;
       border-radius: 12px;
       padding: 16px;
       text-align: right;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       border: 3px solid #5b7058;
-      box-shadow: inset 0 3px 6px rgba(0,0,0,0.4);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     }
 
-    .screen-header {
+    .screen-top {
       font-size: 0.75rem;
       font-weight: bold;
       display: flex;
       justify-content: space-between;
       margin-bottom: 6px;
-      opacity: 0.85;
+      opacity: 0.8;
     }
 
     .screen-main {
       font-size: 2.2rem;
       font-weight: 900;
-      min-height: 45px;
-      letter-spacing: 1px;
+      min-height: 44px;
+      word-break: break-all;
     }
 
     .screen-sub {
       font-size: 0.85rem;
+      font-weight: bold;
       margin-top: 4px;
       min-height: 18px;
-      font-weight: bold;
     }
 
-    /* Mode selector bar */
-    .mode-row {
+    .mode-toggle {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 16px;
     }
 
@@ -89,141 +88,260 @@
       flex: 1;
       padding: 8px;
       border: none;
-      background: #45475a;
-      color: #cdd6f4;
-      border-radius: 8px;
+      background: #334155;
+      color: #94a3b8;
       font-weight: bold;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 0.75rem;
     }
 
     .mode-btn.active {
-      background: var(--mode-btn);
-      color: #11111b;
+      background: #38bdf8;
+      color: #0f172a;
     }
 
-    /* Keypad Grid */
     .keypad {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 10px;
     }
 
-    button.key {
+    .key {
       padding: 16px 0;
       font-size: 1.25rem;
       font-weight: bold;
       border: none;
-      border-radius: 14px;
+      border-radius: 12px;
       cursor: pointer;
-      background: var(--num-btn);
-      color: var(--num-text);
-      box-shadow: 0 4px 0 #181825;
-      transition: transform 0.05s ease;
+      background: var(--key-num);
+      color: #f8fafc;
+      box-shadow: 0 4px 0 #0f172a;
     }
 
-    button.key:active {
-      transform: translateY(4px);
-      box-shadow: none;
+    .key:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #0f172a;
     }
 
-    button.key.operator { background: var(--op-btn); color: #11111b; }
-    button.key.action { background: var(--action-btn); color: #11111b; }
-    button.key.equals { background: var(--equals-btn); color: #11111b; grid-column: span 2; }
-    button.key.slash { background: #7aa2f7; color: #11111b; }
+    .key.op { background: var(--key-op); color: #0f172a; }
+    .key.action { background: var(--key-action); color: #ffffff; }
+    .key.special { background: var(--key-special); color: #ffffff; }
+    .key.equals { background: var(--key-equals); color: #0f172a; grid-column: span 2; }
 
-    /* Track mode form layout */
     .track-panel {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
-    .field {
+    .input-group {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
     }
 
-    .field label {
-      color: #cdd6f4;
-      font-size: 0.8rem;
+    .input-group label {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      font-weight: bold;
     }
 
-    .field input {
-      padding: 10px;
+    .input-group input {
+      padding: 12px;
       border-radius: 8px;
-      border: none;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #f8fafc;
       font-size: 1.2rem;
       font-weight: bold;
       text-align: center;
-      background: #313244;
-      color: #cdd6f4;
     }
 
-    .hidden { display: none; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
   <div class="calculator">
-    <!-- LCD Screen Display -->
-    <div class="lcd-screen">
-      <div class="screen-header">
-        <span id="modeLabel">STD MODE</span>
-        <span id="formatLabel">FMT: SIMPLE</span>
+    <!-- LCD Display -->
+    <div class="screen">
+      <div class="screen-top">
+        <span id="modeTag">STANDARD</span>
+        <span id="fmtTag">FMT: SIMPLE</span>
       </div>
       <div id="lcdMain" class="screen-main">0</div>
       <div id="lcdSub" class="screen-sub">Enter expression</div>
     </div>
 
     <!-- Mode Selector -->
-    <div class="mode-row">
-      <button id="stdBtn" class="mode-btn active" onclick="setMode('std')">Standard</button>
-      <button id="trackBtn" class="mode-btn" onclick="setMode('track')">Track / Dist</button>
-      <button id="fmtBtn" class="mode-btn" onclick="toggleFormat()">Toggle Mix</button>
+    <div class="mode-toggle">
+      <button id="btnStd" class="mode-btn active" onclick="setMode('std')">Standard</button>
+      <button id="btnTrack" class="mode-btn" onclick="setMode('track')">Track / Dist</button>
+      <button id="btnFmt" class="mode-btn" onclick="toggleFormat()">Toggle Mix</button>
     </div>
 
     <!-- Standard Keypad -->
     <div id="stdKeypad" class="keypad">
       <button class="key action" onclick="clearCalc()">C</button>
       <button class="key action" onclick="backspace()">⌫</button>
-      <button class="key slash" onclick="pressKey('/')">/</button>
-      <button class="key operator" onclick="pressKey('÷')">÷</button>
+      <button class="key special" onclick="pressKey('/')">/</button>
+      <button class="key op" onclick="pressKey('÷')">÷</button>
 
       <button class="key" onclick="pressKey('7')">7</button>
       <button class="key" onclick="pressKey('8')">8</button>
       <button class="key" onclick="pressKey('9')">9</button>
-      <button class="key operator" onclick="pressKey('×')">×</button>
+      <button class="key op" onclick="pressKey('×')">×</button>
 
       <button class="key" onclick="pressKey('4')">4</button>
       <button class="key" onclick="pressKey('5')">5</button>
       <button class="key" onclick="pressKey('6')">6</button>
-      <button class="key operator" onclick="pressKey('-')">−</button>
+      <button class="key op" onclick="pressKey('-')">−</button>
 
       <button class="key" onclick="pressKey('1')">1</button>
       <button class="key" onclick="pressKey('2')">2</button>
       <button class="key" onclick="pressKey('3')">3</button>
-      <button class="key operator" onclick="pressKey('+')">+</button>
+      <button class="key op" onclick="pressKey('+')">+</button>
 
       <button class="key" onclick="pressKey('0')">0</button>
-      <button class="key slash" onclick="pressKey('_')">_</button>
+      <button class="key special" onclick="pressKey('_')">_</button>
       <button class="key equals" onclick="evaluateFraction()">=</button>
     </div>
 
-    <!-- Track Problem Inputs -->
-    <div id="trackKeypad" class="track-panel hidden">
-      <div class="field">
+    <!-- Track Problem Mode -->
+    <div id="trackPanel" class="track-panel hidden">
+      <div class="input-group">
         <label>Distance Covered (km)</label>
         <input type="number" id="distInput" value="13" oninput="solveTrack()">
       </div>
-      <div class="field">
+      <div class="input-group">
         <label>Total Track Distance (km)</label>
         <input type="number" id="trackInput" value="150" oninput="solveTrack()">
       </div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    let inputBuffer = "";
+    let isMixedFormat = false;
+    let currentMode = "std";
+
+    function gcd(a, b) {
+      return b === 0 ? Math.abs(a) : gcd(b, a % b);
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('btnStd').classList.toggle('active', mode === 'std');
+      document.getElementById('btnTrack').classList.toggle('active', mode === 'track');
+      document.getElementById('stdKeypad').classList.toggle('hidden', mode !== 'std');
+      document.getElementById('trackPanel').classList.toggle('hidden', mode !== 'track');
+      document.getElementById('modeTag').innerText = mode === 'std' ? "STANDARD" : "TRACK MODE";
+
+      if (mode === 'track') {
+        solveTrack();
+      } else {
+        updateDisplay(inputBuffer || "0", "Enter expression");
+      }
+    }
+
+    function toggleFormat() {
+      isMixedFormat = !isMixedFormat;
+      document.getElementById('fmtTag').innerText = isMixedFormat ? "FMT: MIXED" : "FMT: SIMPLE";
+      if (currentMode === 'track') {
+        solveTrack();
+      } else {
+        evaluateFraction();
+      }
+    }
+
+    function pressKey(char) {
+      inputBuffer += char;
+      updateDisplay(inputBuffer, "Typing...");
+    }
+
+    function clearCalc() {
+      inputBuffer = "";
+      updateDisplay("0", "Cleared");
+    }
+
+    function backspace() {
+      inputBuffer = inputBuffer.slice(0, -1);
+      updateDisplay(inputBuffer || "0", "Typing...");
+    }
+
+    function updateDisplay(main, sub) {
+      document.getElementById('lcdMain').innerText = main;
+      document.getElementById('lcdSub').innerText = sub;
+    }
+
+    function formatResult(num, den) {
+      if (den === 0) return { main: "Error", sub: "Division by zero" };
+      
+      const common = gcd(num, den);
+      let simpNum = num / common;
+      let simpDen = den / common;
+
+      if (simpDen < 0) {
+        simpNum = -simpNum;
+        simpDen = -simpDen;
+      }
+
+      if (isMixedFormat && Math.abs(simpNum) >= simpDen && simpDen !== 1) {
+        const whole = Math.floor(Math.abs(simpNum) / simpDen) * Math.sign(simpNum);
+        const rem = Math.abs(simpNum) % simpDen;
+        return {
+          main: `${whole} ${rem}/${simpDen}`,
+          sub: `Simple: ${simpNum}/${simpDen}`
+        };
+      }
+
+      return {
+        main: simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`,
+        sub: simpDen === 1 ? "Whole Number" : `${simpNum} of ${simpDen} parts`
+      };
+    }
+
+    function solveTrack() {
+      const dist = parseInt(document.getElementById('distInput').value) || 0;
+      const total = parseInt(document.getElementById('trackInput').value) || 1;
+      const res = formatResult(dist, total);
+      updateDisplay(res.main, res.sub);
+    }
+
+    function evaluateFraction() {
+      if (!inputBuffer) return;
+
+      try {
+        const ops = ['+', '-', '×', '÷'];
+        let op = ops.find(o => inputBuffer.includes(o));
+
+        if (!op && inputBuffer.includes('/')) {
+          const [n, d] = inputBuffer.split('/').map(Number);
+          const res = formatResult(n, d);
+          updateDisplay(res.main, res.sub);
+          return;
+        }
+
+        if (!op) return;
+
+        const parts = inputBuffer.split(op);
+        const [n1, d1] = parts[0].includes('/') ? parts[0].split('/').map(Number) : [Number(parts[0]), 1];
+        const [n2, d2] = parts[1].includes('/') ? parts[1].split('/').map(Number) : [Number(parts[1]), 1];
+
+        let resNum = 0, resDen = 1;
+
+        if (op === '+') { resNum = n1 * d2 + n2 * d1; resDen = d1 * d2; }
+        if (op === '-') { resNum = n1 * d2 - n2 * d1; resDen = d1 * d2; }
+        if (op === '×') { resNum = n1 * n2; resDen = d1 * d2; }
+        if (op === '÷') { resNum = n1 * d2; resDen = d1 * n2; }
+
+        const res = formatResult(resNum, resDen);
+        updateDisplay(res.main, res.sub);
+      } catch (e) {
+        updateDisplay("Error", "Invalid Format");
+      }
+    }
+  </script>
 </body>
 </html>
