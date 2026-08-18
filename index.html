@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fraction Calculator</title>
+  <title>Ancient Fraction & Sub-Unit Calculator</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -61,11 +61,11 @@
       display: flex;
       justify-content: space-between;
       margin-bottom: 6px;
-      opacity: 0.8;
+      opacity: 0.85;
     }
 
     .screen-main {
-      font-size: 2.2rem;
+      font-size: 2.1rem;
       font-weight: 900;
       min-height: 44px;
       word-break: break-all;
@@ -86,7 +86,7 @@
 
     .mode-btn {
       flex: 1;
-      padding: 8px;
+      padding: 8px 4px;
       border: none;
       background: #334155;
       color: #94a3b8;
@@ -94,6 +94,7 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 0.75rem;
+      transition: all 0.2s ease;
     }
 
     .mode-btn.active {
@@ -129,7 +130,7 @@
     .key.special { background: var(--key-special); color: #ffffff; }
     .key.equals { background: var(--key-equals); color: #0f172a; grid-column: span 2; }
 
-    .track-panel {
+    .panel {
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -147,13 +148,13 @@
       font-weight: bold;
     }
 
-    .input-group input {
+    .input-group input, .input-group select {
       padding: 12px;
       border-radius: 8px;
       border: 1px solid #475569;
       background: #0f172a;
       color: #f8fafc;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: bold;
       text-align: center;
     }
@@ -177,7 +178,8 @@
     <!-- Mode Selector -->
     <div class="mode-toggle">
       <button id="btnStd" class="mode-btn active" onclick="setMode('std')">Standard</button>
-      <button id="btnTrack" class="mode-btn" onclick="setMode('track')">Track / Dist</button>
+      <button id="btnSub" class="mode-btn" onclick="setMode('sub')">Sub-Units</button>
+      <button id="btnTrack" class="mode-btn" onclick="setMode('track')">Track</button>
       <button id="btnFmt" class="mode-btn" onclick="toggleFormat()">Toggle Mix</button>
     </div>
 
@@ -208,8 +210,28 @@
       <button class="key equals" onclick="evaluateFraction()">=</button>
     </div>
 
-    <!-- Track Problem Mode -->
-    <div id="trackPanel" class="track-panel hidden">
+    <!-- Ancient Sub-Units Mode -->
+    <div id="subPanel" class="panel hidden">
+      <div class="input-group">
+        <label>Enter Fraction (e.g. 17 / 49)</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="number" id="subNum" value="17" placeholder="Num" oninput="solveSubUnits()">
+          <span style="color:white; font-size:1.5rem; align-self:center;">/</span>
+          <input type="number" id="subDen" value="49" placeholder="Den" oninput="solveSubUnits()">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Ancient Base System</label>
+        <select id="baseSystem" onchange="solveSubUnits()">
+          <option value="60">Base-60 (60 Ghatis / Minutes)</option>
+          <option value="360">Base-360 (360° Solar Path)</option>
+          <option value="24">Base-24 (24 Hour Day)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Track Mode -->
+    <div id="trackPanel" class="panel hidden">
       <div class="input-group">
         <label>Distance Covered (km)</label>
         <input type="number" id="distInput" value="13" oninput="solveTrack()">
@@ -233,26 +255,28 @@
     function setMode(mode) {
       currentMode = mode;
       document.getElementById('btnStd').classList.toggle('active', mode === 'std');
+      document.getElementById('btnSub').classList.toggle('active', mode === 'sub');
       document.getElementById('btnTrack').classList.toggle('active', mode === 'track');
+      
       document.getElementById('stdKeypad').classList.toggle('hidden', mode !== 'std');
+      document.getElementById('subPanel').classList.toggle('hidden', mode !== 'sub');
       document.getElementById('trackPanel').classList.toggle('hidden', mode !== 'track');
-      document.getElementById('modeTag').innerText = mode === 'std' ? "STANDARD" : "TRACK MODE";
 
-      if (mode === 'track') {
-        solveTrack();
-      } else {
-        updateDisplay(inputBuffer || "0", "Enter expression");
-      }
+      document.getElementById('modeTag').innerText = mode.toUpperCase() + " MODE";
+
+      if (mode === 'track') solveTrack();
+      else if (mode === 'sub') solveSubUnits();
+      else updateDisplay(inputBuffer || "0", "Enter expression");
     }
 
     function toggleFormat() {
       isMixedFormat = !isMixedFormat;
       document.getElementById('fmtTag').innerText = isMixedFormat ? "FMT: MIXED" : "FMT: SIMPLE";
-      if (currentMode === 'track') {
-        solveTrack();
-      } else {
-        evaluateFraction();
-      }
+      document.getElementById('btnFmt').classList.toggle('active', isMixedFormat);
+
+      if (currentMode === 'track') solveTrack();
+      else if (currentMode === 'sub') solveSubUnits();
+      else evaluateFraction();
     }
 
     function pressKey(char) {
@@ -300,6 +324,34 @@
         main: simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`,
         sub: simpDen === 1 ? "Whole Number" : `${simpNum} of ${simpDen} parts`
       };
+    }
+
+    function solveSubUnits() {
+      const num = parseInt(document.getElementById('subNum').value) || 0;
+      const den = parseInt(document.getElementById('subDen').value) || 1;
+      const base = parseInt(document.getElementById('baseSystem').value) || 60;
+
+      if (den === 0) {
+        updateDisplay("Error", "Invalid denominator");
+        return;
+      }
+
+      // Convert fraction to sub-units: (num * base) / den
+      const totalSubParts = num * base;
+      const wholeSub = Math.floor(totalSubParts / den);
+      const remSubParts = totalSubParts % den;
+
+      const common = gcd(remSubParts, den);
+      const simpRem = remSubParts / common;
+      const simpDen = den / common;
+
+      const label = base === 60 ? "Ghatis/Mins" : base === 360 ? "Degrees" : "Hours";
+      
+      if (remSubParts === 0) {
+        updateDisplay(`${wholeSub} ${label}`, `Exactly ${num}/${den} of base ${base}`);
+      } else {
+        updateDisplay(`${wholeSub} ${simpRem}/${simpDen}`, `${label} (scaled to Base-${base})`);
+      }
     }
 
     function solveTrack() {
