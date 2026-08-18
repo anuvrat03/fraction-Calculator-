@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Fraction Calculator</title>
+  <title>Ancient Mixed Fraction Calculator</title>
   <style>
     :root {
       --bg: #0f172a;
       --card: #1e293b;
       --lcd-bg: #8ba888;
       --lcd-text: #0f2511;
-      --btn-calc: #22c55e;
       --btn-clear: #ef4444;
       --input-bg: #0f172a;
       --text-light: #f8fafc;
@@ -42,7 +41,7 @@
       border: 2px solid #475569;
     }
 
-    /* Result Display */
+    /* Screen Display */
     .screen {
       background: var(--lcd-bg);
       color: var(--lcd-text);
@@ -56,11 +55,12 @@
     }
 
     .screen-label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: bold;
       margin-bottom: 4px;
-      opacity: 0.8;
+      opacity: 0.85;
       text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .screen-main {
@@ -71,13 +71,13 @@
     }
 
     .screen-sub {
-      font-size: 0.85rem;
+      font-size: 1.1rem;
       font-weight: bold;
-      margin-top: 4px;
-      min-height: 18px;
+      margin-top: 6px;
+      color: #1a3a1d;
     }
 
-    /* Expression Builder Inputs */
+    /* Equation Builder */
     .equation-builder {
       display: flex;
       align-items: center;
@@ -93,13 +93,13 @@
     }
 
     .whole-input {
-      width: 45px;
-      padding: 10px 4px;
+      width: 48px;
+      padding: 12px 4px;
       border-radius: 8px;
       border: 1px solid #475569;
       background: var(--input-bg);
       color: var(--text-light);
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: bold;
       text-align: center;
     }
@@ -108,7 +108,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      width: 50px;
+      width: 52px;
     }
 
     .stacked-fraction input {
@@ -118,7 +118,7 @@
       border: 1px solid #475569;
       background: var(--input-bg);
       color: var(--text-light);
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: bold;
       text-align: center;
     }
@@ -128,7 +128,7 @@
     }
 
     select.operator {
-      padding: 10px 6px;
+      padding: 10px 4px;
       border-radius: 8px;
       border: 1px solid #475569;
       background: #334155;
@@ -138,31 +138,23 @@
       cursor: pointer;
     }
 
-    /* Actions */
-    .action-row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn {
-      flex: 1;
+    .btn-clear {
+      width: 100%;
       padding: 14px;
       border: none;
       border-radius: 12px;
       font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
+      background: var(--btn-clear);
+      color: #ffffff;
       box-shadow: 0 4px 0 #0f172a;
-      transition: transform 0.05s ease;
     }
 
-    .btn:active {
+    .btn-clear:active {
       transform: translateY(2px);
       box-shadow: 0 2px 0 #0f172a;
     }
-
-    .btn-clear { background: var(--btn-clear); color: #ffffff; }
-    .btn-calc { background: var(--btn-calc); color: #0f172a; }
   </style>
 </head>
 <body>
@@ -171,46 +163,42 @@
     <!-- Screen Display -->
     <div class="screen">
       <div class="screen-label">Mixed Fraction Result</div>
-      <div id="lcdMain" class="screen-main">0</div>
-      <div id="lcdSub" class="screen-sub">Simple: 0</div>
+      <div id="lcdMain" class="screen-main">1 1/3</div>
+      <div id="lcdSub" class="screen-sub">Simple Fraction: 4/3</div>
     </div>
 
-    <!-- Fraction Inputs -->
+    <!-- Inputs -->
     <div class="equation-builder">
-      <!-- First Fraction -->
+      <!-- Fraction 1 -->
       <div class="fraction-input">
-        <input type="number" id="w1" class="whole-input" placeholder="W" value="">
+        <input type="number" id="w1" class="whole-input" placeholder="W" value="1" min="0" oninput="calculate()">
         <div class="stacked-fraction">
-          <input type="number" id="n1" placeholder="N" value="13">
+          <input type="number" id="n1" placeholder="N" value="2" min="0" oninput="calculate()">
           <hr>
-          <input type="number" id="d1" placeholder="D" value="150">
+          <input type="number" id="d1" placeholder="D" value="6" min="1" oninput="calculate()">
         </div>
       </div>
 
-      <!-- Operator Selector -->
+      <!-- Operator -->
       <select id="op" class="operator" onchange="calculate()">
         <option value="+">+</option>
         <option value="-">−</option>
         <option value="×">×</option>
-        <option value="÷" selected>÷</option>
+        <option value="÷">÷</option>
       </select>
 
-      <!-- Second Fraction -->
+      <!-- Fraction 2 -->
       <div class="fraction-input">
-        <input type="number" id="w2" class="whole-input" placeholder="W" value="">
+        <input type="number" id="w2" class="whole-input" placeholder="W" value="0" min="0" oninput="calculate()">
         <div class="stacked-fraction">
-          <input type="number" id="n2" placeholder="N" value="1">
+          <input type="number" id="n2" placeholder="N" value="0" min="0" oninput="calculate()">
           <hr>
-          <input type="number" id="d2" placeholder="D" value="1">
+          <input type="number" id="d2" placeholder="D" value="1" min="1" oninput="calculate()">
         </div>
       </div>
     </div>
 
-    <!-- Buttons -->
-    <div class="action-row">
-      <button class="btn btn-clear" onclick="clearInputs()">Clear</button>
-      <button class="btn btn-calc" onclick="calculate()">Calculate</button>
-    </div>
+    <button class="btn-clear" onclick="clearInputs()">Clear All</button>
   </div>
 
   <script>
@@ -225,88 +213,73 @@
       document.getElementById('w2').value = '';
       document.getElementById('n2').value = '';
       document.getElementById('d2').value = '';
-      document.getElementById('lcdMain').innerText = '0';
-      document.getElementById('lcdSub').innerText = 'Simple: 0';
-    }
-
-    function getImproperNumerator(whole, num, den) {
-      const w = parseInt(whole) || 0;
-      const n = parseInt(num) || 0;
-      const d = parseInt(den) || 1;
-      
-      return (w < 0) ? (w * d - n) : (w * d + n);
+      calculate();
     }
 
     function calculate() {
-      const w1 = document.getElementById('w1').value;
-      const n1 = document.getElementById('n1').value;
-      const d1 = document.getElementById('d1').value || 1;
+      const w1 = parseInt(document.getElementById('w1').value) || 0;
+      const n1 = parseInt(document.getElementById('n1').value) || 0;
+      const d1 = parseInt(document.getElementById('d1').value) || 1;
 
-      const w2 = document.getElementById('w2').value;
-      const n2 = document.getElementById('n2').value;
-      const d2 = document.getElementById('d2').value || 1;
+      const w2 = parseInt(document.getElementById('w2').value) || 0;
+      const n2 = parseInt(document.getElementById('n2').value) || 0;
+      const d2 = parseInt(document.getElementById('d2').value) || 1;
 
       const op = document.getElementById('op').value;
 
-      const den1 = parseInt(d1) || 1;
-      const den2 = parseInt(d2) || 1;
-
-      if (den1 === 0 || den2 === 0) {
+      if (d1 === 0 || d2 === 0) {
         document.getElementById('lcdMain').innerText = "Error";
         document.getElementById('lcdSub').innerText = "Denominator cannot be 0";
         return;
       }
 
-      const num1 = getImproperNumerator(w1, n1, den1);
-      const num2 = getImproperNumerator(w2, n2, den2);
+      // Convert whole + fraction into improper numerator
+      const num1 = w1 * d1 + n1;
+      const num2 = w2 * d2 + n2;
 
       let resNum = 0;
       let resDen = 1;
 
       if (op === '+') {
-        resNum = num1 * den2 + num2 * den1;
-        resDen = den1 * den2;
+        resNum = num1 * d2 + num2 * d1;
+        resDen = d1 * d2;
       } else if (op === '-') {
-        resNum = num1 * den2 - num2 * den1;
-        resDen = den1 * den2;
+        resNum = num1 * d2 - num2 * d1;
+        resDen = d1 * d2;
       } else if (op === '×') {
         resNum = num1 * num2;
-        resDen = den1 * den2;
+        resDen = d1 * d2;
       } else if (op === '÷') {
         if (num2 === 0) {
           document.getElementById('lcdMain').innerText = "Error";
           document.getElementById('lcdSub').innerText = "Cannot divide by 0";
           return;
         }
-        resNum = num1 * den2;
-        resDen = den1 * num2;
+        resNum = num1 * d2;
+        resDen = d1 * num2;
       }
 
-      // Simplify result
+      // Simplify using GCD
       const common = gcd(resNum, resDen);
       let simpNum = resNum / common;
       let simpDen = resDen / common;
 
-      if (simpDen < 0) {
-        simpNum = -simpNum;
-        simpDen = -simpDen;
-      }
-
-      // Convert to Mixed Fraction
-      let mainDisplay = "";
+      // Build display outputs
+      let mixedDisplay = "";
       if (Math.abs(simpNum) >= simpDen && simpDen !== 1) {
         const wholePart = Math.trunc(simpNum / simpDen);
         const remNum = Math.abs(simpNum) % simpDen;
-        mainDisplay = `${wholePart} ${remNum}/${simpDen}`;
+        mixedDisplay = remNum === 0 ? `${wholePart}` : `${wholePart} ${remNum}/${simpDen}`;
       } else {
-        mainDisplay = simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`;
+        mixedDisplay = simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`;
       }
 
-      document.getElementById('lcdMain').innerText = mainDisplay;
-      document.getElementById('lcdSub').innerText = simpDen === 1 ? "Whole Number" : `Simple: ${simpNum}/${simpDen}`;
+      const simpleDisplay = simpDen === 1 ? `${simpNum}` : `${simpNum}/${simpDen}`;
+
+      document.getElementById('lcdMain').innerText = mixedDisplay;
+      document.getElementById('lcdSub').innerText = `Simple Fraction: ${simpleDisplay}`;
     }
 
-    // Run initial calculation
     calculate();
   </script>
 </body>
