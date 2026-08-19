@@ -91,7 +91,7 @@
       letter-spacing: -0.5px;
     }
 
-    /* Extra-Large Typography */
+    /* Typography */
     .mixed-number {
       display: inline-flex;
       align-items: center;
@@ -292,10 +292,12 @@
         const [n1, d1] = decimalToFraction(parts[0]);
         const [n2, d2] = decimalToFraction(parts[1]);
 
-        num = n1 * d2;
-        den = d1 * n2;
+        num = parseInt(n1 * d2, 10);
+        den = parseInt(d1 * n2, 10);
       } else if (inputString.includes('.')) {
-        [num, den] = decimalToFraction(inputString);
+        const [n, d] = decimalToFraction(inputString);
+        num = parseInt(n, 10);
+        den = parseInt(d, 10);
       } else {
         num = parseInt(inputString, 10);
         den = 1;
@@ -317,8 +319,8 @@
       }
 
       const divisor = gcd(remNumerator, den);
-      const simpNum = remNumerator / divisor;
-      const simpDen = den / divisor;
+      const simpNum = parseInt(remNumerator / divisor, 10);
+      const simpDen = parseInt(den / divisor, 10);
 
       if (whole === 0) {
         document.getElementById('display-screen').innerHTML = `
@@ -345,7 +347,7 @@
       renderVisualCircles(whole, simpNum, simpDen);
     }
 
-    /* Pure SVG Circle Renderer */
+    /* SVG Circle Renderer */
     function renderVisualCircles(whole, num, den) {
       const visualContainer = document.getElementById('visual-area');
       visualContainer.innerHTML = '';
@@ -368,9 +370,9 @@
       svg.setAttribute("height", "50");
       svg.setAttribute("viewBox", "0 0 60 60");
 
-      const cx = 30, cy = 30, r = 26;
+      const cx = 30, cy = 30, r = 25;
 
-      // Base circle
+      // Gray Background Base
       const baseCircle = document.createElementNS(svgNS, "circle");
       baseCircle.setAttribute("cx", cx);
       baseCircle.setAttribute("cy", cy);
@@ -378,7 +380,7 @@
       baseCircle.setAttribute("fill", "#e4e6eb");
       svg.appendChild(baseCircle);
 
-      // Blue Slices
+      // Blue Filled Slices
       if (num === den) {
         const fullCircle = document.createElementNS(svgNS, "circle");
         fullCircle.setAttribute("cx", cx);
@@ -407,7 +409,7 @@
         }
       }
 
-      // Divider lines
+      // White Slice Dividers
       const sliceAngle = (2 * Math.PI) / den;
       for (let i = 0; i < den; i++) {
         const angle = i * sliceAngle - Math.PI / 2;
@@ -424,7 +426,7 @@
         svg.appendChild(line);
       }
 
-      // Outer border
+      // Blue Outline
       const borderCircle = document.createElementNS(svgNS, "circle");
       borderCircle.setAttribute("cx", cx);
       borderCircle.setAttribute("cy", cy);
