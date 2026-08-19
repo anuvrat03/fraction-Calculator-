@@ -1,463 +1,445 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fraction Plus Calculator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fraction Calculator</title>
   <style>
-    :root {
-      --bg: #1e293b;
-      --calc-body: #d1d5db;
-      --lcd-bg: #82b1b8;
-      --lcd-text: #0f2511;
-      
-      --btn-whole: #64748b;
-      --btn-num: #cbd5e1;
-      --btn-den: #e2e8f0;
-      
-      --btn-op: #475569;
-      --btn-equals: #f97316;
-      --btn-clear: #ef4444;
-      --btn-active: #2563eb;
-    }
-
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-
     body {
-      background: var(--bg);
-      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 12px;
+      min-height: 100vh;
+      background-color: #1a1a1a;
+      margin: 0;
+      padding: 20px 0;
     }
-
-    .calculator {
-      background: var(--calc-body);
-      width: 100%;
-      max-width: 400px;
+    .converter-card {
+      background: #e6e8eb;
+      padding: 20px;
       border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-      border: 3px solid #9ca3af;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 360px;
     }
-
-    /* Screen Display */
-    .screen {
-      background: var(--lcd-bg);
-      color: var(--lcd-text);
-      font-family: 'Courier New', Courier, monospace;
+    
+    /* Screen Display Container */
+    .screen-container {
+      background: #73b8c8;
+      border: 2px solid #4a94a5;
       border-radius: 8px;
-      padding: 12px;
-      border: 3px solid #475569;
-      margin-bottom: 12px;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+      padding: 12px 16px;
+      min-height: 120px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.25);
     }
 
-    .screen-top {
+    /* Screen Top Bar */
+    .screen-header {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      height: 24px;
+    }
+    .app-title {
       font-size: 0.75rem;
-      font-weight: bold;
-      opacity: 0.85;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #1a3c45;
+      text-transform: uppercase;
+    }
+    .share-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      color: #1a3c45;
+      box-shadow: none;
+    }
+    .share-btn:active {
+      opacity: 0.6;
+      background: none;
+    }
+    .share-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
     }
 
-    .display-inputs {
+    .display-body {
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      gap: 12px;
-      min-height: 60px;
+      width: 100%;
+      min-height: 70px;
     }
 
-    .input-box {
-      background: rgba(255, 255, 255, 0.4);
-      border: 2px solid transparent;
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 1.8rem;
+    .input-text {
+      font-size: 2.2rem;
+      color: #000;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    /* Extra-Large, Sharp Typography */
+    .mixed-number {
+      display: inline-flex;
+      align-items: center;
+      color: #000;
+      line-height: 1;
+    }
+    
+    .whole-part {
+      font-size: 5rem;
       font-weight: 900;
-      text-align: center;
-      min-width: 40px;
+      letter-spacing: -2px;
+      margin-right: 8px;
+      -webkit-font-smoothing: antialiased;
     }
-
-    .input-box.active {
-      border-color: #0f2511;
-      background: rgba(255, 255, 255, 0.75);
-    }
-
-    .frac-stack {
-      display: flex;
+    
+    .fraction-part {
+      display: inline-flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
-    }
-
-    .frac-line {
-      width: 100%;
-      height: 3px;
-      background: var(--lcd-text);
-    }
-
-    .screen-result {
-      font-size: 1.1rem;
-      font-weight: bold;
-      text-align: right;
-      border-top: 1px dashed rgba(15, 37, 17, 0.4);
-      padding-top: 4px;
-    }
-
-    /* Keypad Grid Layout */
-    .keypad-wrapper {
-      display: grid;
-      grid-template-columns: 2fr 3fr;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .section-label {
-      font-size: 0.65rem;
+      vertical-align: middle;
+      font-size: 1.8rem;
       font-weight: 800;
-      text-transform: uppercase;
+    }
+    
+    .numerator {
+      border-bottom: 3px solid #000;
+      padding: 0 4px 1px 4px;
       text-align: center;
-      margin-bottom: 4px;
-      color: #334155;
+      width: 100%;
+    }
+    
+    .denominator {
+      padding: 1px 4px 0 4px;
+      text-align: center;
+      width: 100%;
     }
 
-    .whole-column {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 6px;
-      background: #b0b7c0;
-      padding: 8px;
-      border-radius: 10px;
-    }
-
-    .fraction-column {
+    /* Visual Circle Representation Styling */
+    .visual-container {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
-      background: #b0b7c0;
-      padding: 8px;
-      border-radius: 10px;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: #ffffff;
+      border: 1px solid #ccd0d5;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      min-height: 80px;
     }
 
-    .num-grid, .den-grid {
+    /* Keypad Styling */
+    .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 5px;
+      gap: 10px;
     }
-
-    .btn {
-      padding: 10px 0;
-      font-size: 1.1rem;
-      font-weight: bold;
-      border: 1px solid #64748b;
-      border-radius: 6px;
+    button {
+      padding: 14px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      border: 1px solid #b5b8bc;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffffff 0%, #d8dcd0 100%);
+      color: #111;
       cursor: pointer;
-      box-shadow: 0 3px 0 #475569;
-      color: #0f172a;
-      transition: background 0.1s, transform 0.05s;
+      box-shadow: 0 3px 0 #a2a6ab, 0 4px 6px rgba(0,0,0,0.1);
     }
-
-    .btn:active {
+    button:active {
       transform: translateY(2px);
-      box-shadow: 0 1px 0 #475569;
+      box-shadow: 0 1px 0 #a2a6ab, 0 2px 3px rgba(0,0,0,0.1);
     }
-
-    .btn-whole { background: var(--btn-whole); color: white; }
-    .btn-num { background: var(--btn-num); }
-    .btn-den { background: var(--btn-den); }
-    .btn-clear { background: var(--btn-clear); color: white; grid-column: span 2; }
-    .btn-back { background: #cbd5e1; grid-column: span 2; }
-    .btn-wide { grid-column: span 2; }
-
-    /* Bottom Operators Row */
-    .operators-row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
+    button.op-btn {
+      background: linear-gradient(180deg, #e4edfd 0%, #b5cef7 100%);
+      color: #003670;
+      border-color: #9cbce8;
+      box-shadow: 0 3px 0 #85a8da;
     }
-
-    .btn-op { background: var(--btn-op); color: white; font-size: 1.3rem; }
-    .btn-equals { background: var(--btn-equals); color: white; font-size: 1.4rem; }
-    
-    .config-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
+    button.clear-btn {
+      background: linear-gradient(180deg, #fde4e4 0%, #f7b5b5 100%);
+      color: #8c0000;
+      border-color: #e89c9c;
+      box-shadow: 0 3px 0 #da8585;
     }
-
-    .config-select {
-      flex: 1;
-      padding: 6px;
-      border-radius: 6px;
-      border: 1px solid #64748b;
-      background: #f8fafc;
-      font-weight: bold;
-      font-size: 0.8rem;
+    button.equals-btn {
+      grid-column: span 1;
+      background: linear-gradient(180deg, #ffa41b 0%, #e07b00 100%);
+      color: #fff;
+      border-color: #c96f00;
+      box-shadow: 0 3px 0 #b06100;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
-
-    .btn-toggle {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid #64748b;
-      background: #64748b;
-      color: white;
-      font-size: 0.8rem;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .btn-toggle.active { background: var(--btn-active); }
   </style>
 </head>
 <body>
 
-  <div class="calculator">
-    <!-- Screen Display -->
-    <div class="screen">
-      <div class="screen-top">
-        <span id="activeFieldTag">EDITING: WHOLE</span>
-        <span id="baseTag">BASE: 60</span>
+  <div class="converter-card">
+    <div class="screen-container">
+      <div class="screen-header">
+        <span class="app-title">Fraction Calculator</span>
+        <button class="share-btn" onclick="shareResult()" title="Share Result">
+          <svg viewBox="0 0 24 24">
+            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+          </svg>
+        </button>
       </div>
-
-      <!-- Live Inputs -->
-      <div class="display-inputs">
-        <div id="boxW" class="input-box active">0</div>
-        <div class="frac-stack">
-          <div id="boxN" class="input-box">0</div>
-          <div class="frac-line"></div>
-          <div id="boxD" class="input-box">1</div>
-        </div>
+      <div class="display-body" id="display-screen">
+        <span class="input-text"></span>
       </div>
-
-      <!-- Simplified Mixed Result -->
-      <div id="lcdResult" class="screen-result">Result = 0</div>
     </div>
 
-    <!-- Controls -->
-    <div class="config-row">
-      <button id="btnMixToggle" class="btn-toggle active" onclick="toggleMixMode()">Ancient Scale: ON</button>
-      <select id="baseSystem" class="config-select" onchange="calculate()">
-        <option value="60">Base-60 (Ghatis / Mins)</option>
-        <option value="360">Base-360 (Degrees)</option>
-        <option value="24">Base-24 (Hours)</option>
-        <option value="1">Base-1 (Standard Fraction)</option>
-      </select>
+    <!-- Blue Circle Visual Fraction Container -->
+    <div class="visual-container" id="visual-area">
+      <!-- Generated blue pie charts appear here -->
     </div>
 
-    <!-- Keypads -->
-    <div class="keypad-wrapper">
-      
-      <!-- Whole Number -->
-      <div>
-        <div class="section-label">Whole Number</div>
-        <div class="whole-column">
-          <button class="btn btn-clear" onclick="clearAll()">C</button>
-          
-          <button class="btn btn-whole" onclick="appendDigit('w', '1')">1</button>
-          <button class="btn btn-whole" onclick="appendDigit('w', '2')">2</button>
-          <button class="btn btn-whole" onclick="appendDigit('w', '3')">3</button>
-          <button class="btn btn-whole" onclick="appendDigit('w', '4')">4</button>
-          <button class="btn btn-whole" onclick="appendDigit('w', '5')">5</button>
-          <button class="btn btn-whole" onclick="appendDigit('w', '6')">6</button>
-          <button class="btn btn-whole" onclick="appendDigit('w', '7')">7</button>
-          <button class="btn btn-whole" onclick="appendDigit('w', '8')">8</button>
-          <button class="btn btn-whole" onclick="appendDigit('w', '9')">9</button>
-          <button class="btn btn-whole" onclick="appendDigit('w', '0')">0</button>
-          
-          <button class="btn btn-back" onclick="backspace('w')">⌫ W</button>
-        </div>
-      </div>
+    <div class="keypad">
+      <button onclick="press('7')">7</button>
+      <button onclick="press('8')">8</button>
+      <button onclick="press('9')">9</button>
 
-      <!-- Numerator & Denominator -->
-      <div class="fraction-column">
-        <div>
-          <div class="section-label">Numerator (Top)</div>
-          <div class="num-grid">
-            <button class="btn btn-num" onclick="appendDigit('n', '1')">1</button>
-            <button class="btn btn-num" onclick="appendDigit('n', '2')">2</button>
-            <button class="btn btn-num" onclick="appendDigit('n', '3')">3</button>
-            <button class="btn btn-num" onclick="appendDigit('n', '4')">4</button>
-            <button class="btn btn-num" onclick="appendDigit('n', '5')">5</button>
-            <button class="btn btn-num" onclick="appendDigit('n', '6')">6</button>
-            <button class="btn btn-num" onclick="appendDigit('n', '7')">7</button>
-            <button class="btn btn-num" onclick="appendDigit('n', '8')">8</button>
-            <button class="btn btn-num" onclick="appendDigit('n', '9')">9</button>
-            <button class="btn btn-num btn-wide" onclick="appendDigit('n', '0')">0</button>
-            <button class="btn btn-num" onclick="backspace('n')">⌫</button>
-          </div>
-        </div>
+      <button onclick="press('4')">4</button>
+      <button onclick="press('5')">5</button>
+      <button onclick="press('6')">6</button>
 
-        <hr style="border: 1px solid #64748b;">
+      <button onclick="press('1')">1</button>
+      <button onclick="press('2')">2</button>
+      <button onclick="press('3')">3</button>
 
-        <div>
-          <div class="section-label">Denominator (Bottom)</div>
-          <div class="den-grid">
-            <button class="btn btn-den" onclick="appendDigit('d', '1')">1</button>
-            <button class="btn btn-den" onclick="appendDigit('d', '2')">2</button>
-            <button class="btn btn-den" onclick="appendDigit('d', '3')">3</button>
-            <button class="btn btn-den" onclick="appendDigit('d', '4')">4</button>
-            <button class="btn btn-den" onclick="appendDigit('d', '5')">5</button>
-            <button class="btn btn-den" onclick="appendDigit('d', '6')">6</button>
-            <button class="btn btn-den" onclick="appendDigit('d', '7')">7</button>
-            <button class="btn btn-den" onclick="appendDigit('d', '8')">8</button>
-            <button class="btn btn-den" onclick="appendDigit('d', '9')">9</button>
-            <button class="btn btn-den btn-wide" onclick="appendDigit('d', '0')">0</button>
-            <button class="btn btn-den" onclick="backspace('d')">⌫</button>
-          </div>
-        </div>
-      </div>
+      <button class="clear-btn" onclick="clearAll()">C</button>
+      <button onclick="press('0')">0</button>
+      <button class="op-btn" onclick="backspace()">⌫</button>
 
-    </div>
-
-    <!-- Operators -->
-    <div class="operators-row">
-      <button class="btn btn-op" onclick="setOperator('+')">+</button>
-      <button class="btn btn-op" onclick="setOperator('-')">−</button>
-      <button class="btn btn-op" onclick="setOperator('×')">×</button>
-      <button class="btn btn-op" onclick="setOperator('÷')">÷</button>
-      <button class="btn btn-equals" onclick="calculate()">=</button>
+      <button class="op-btn" onclick="press('.')">.</button>
+      <button class="op-btn" onclick="press('/')">/</button>
+      <button class="equals-btn" onclick="calculate()">=</button>
     </div>
   </div>
 
   <script>
-    let activeFrac = 1;
-    let currentOp = '';
-    let useAncientScale = true;
+    let inputString = "";
+    let lastCalculatedText = "";
 
-    // Strict string inputs so "1" + "2" = "12"
-    let f1 = { w: "", n: "", d: "" };
-    let f2 = { w: "", n: "", d: "" };
-
-    function gcd(a, b) {
-      return b === 0 ? Math.abs(a) : gcd(b, a % b);
+    function press(val) {
+      if (val === '/') {
+        if (inputString === "" || inputString.includes('/')) return;
+      }
+      if (val === '.') {
+        const parts = inputString.split('/');
+        const currentPart = parts[parts.length - 1];
+        if (currentPart.includes('.')) return;
+      }
+      inputString += val;
+      renderInput();
     }
 
-    function toggleMixMode() {
-      useAncientScale = !useAncientScale;
-      document.getElementById('btnMixToggle').classList.toggle('active', useAncientScale);
-      document.getElementById('btnMixToggle').innerText = useAncientScale ? "Ancient Scale: ON" : "Ancient Scale: OFF";
-      calculate();
-    }
-
-    function appendDigit(type, digit) {
-      let target = activeFrac === 1 ? f1 : f2;
-      
-      // Append string character directly
-      target[type] = (target[type] || "") + String(digit);
-      
-      setActiveHighlight(type);
-      calculate();
-    }
-
-    function backspace(type) {
-      let target = activeFrac === 1 ? f1 : f2;
-      target[type] = (target[type] || "").slice(0, -1);
-      setActiveHighlight(type);
-      calculate();
-    }
-
-    function setActiveHighlight(type) {
-      document.getElementById('boxW').classList.toggle('active', type === 'w');
-      document.getElementById('boxN').classList.toggle('active', type === 'n');
-      document.getElementById('boxD').classList.toggle('active', type === 'd');
-      document.getElementById('activeFieldTag').innerText = `EDITING: F${activeFrac} (${type.toUpperCase()})`;
+    function backspace() {
+      inputString = inputString.slice(0, -1);
+      renderInput();
     }
 
     function clearAll() {
-      f1 = { w: "", n: "", d: "" };
-      f2 = { w: "", n: "", d: "" };
-      activeFrac = 1;
-      currentOp = '';
-      setActiveHighlight('w');
-      calculate();
+      inputString = "";
+      lastCalculatedText = "";
+      document.getElementById('display-screen').innerHTML = `<span class="input-text"></span>`;
+      document.getElementById('visual-area').innerHTML = "";
     }
 
-    function setOperator(op) {
-      currentOp = op;
-      activeFrac = 2;
-      setActiveHighlight('w');
+    function renderInput() {
+      document.getElementById('display-screen').innerHTML = `<span class="input-text">${inputString}</span>`;
+    }
+
+    function gcd(a, b) {
+      return b === 0 ? a : gcd(b, a % b);
+    }
+
+    function decimalToFraction(val) {
+      if (!val.includes('.')) {
+        return [parseInt(val, 10), 1];
+      }
+      const decPlaces = val.split('.')[1].length;
+      const den = Math.pow(10, decPlaces);
+      const num = Math.round(parseFloat(val) * den);
+      return [num, den];
     }
 
     function calculate() {
-      const base = parseInt(document.getElementById('baseSystem').value) || 60;
-      document.getElementById('baseTag').innerText = `BASE: ${base}`;
+      if (!inputString) return;
 
-      // Update display text as strings
-      const current = activeFrac === 1 ? f1 : f2;
-      document.getElementById('boxW').innerText = current.w || '0';
-      document.getElementById('boxN').innerText = current.n || '0';
-      document.getElementById('boxD').innerText = current.d || '1';
+      let num, den;
 
-      const w1 = parseInt(f1.w) || 0;
-      const n1 = parseInt(f1.n) || 0;
-      const d1 = parseInt(f1.d) || 1;
-
-      if (d1 === 0) {
-        document.getElementById('lcdResult').innerText = "Error: Division by 0";
-        return;
-      }
-
-      let totalNum = w1 * d1 + n1;
-      let totalDen = d1;
-
-      if (currentOp && (f2.n || f2.w)) {
-        const w2 = parseInt(f2.w) || 0;
-        const n2 = parseInt(f2.n) || 0;
-        const d2 = parseInt(f2.d) || 1;
-
-        if (d2 === 0) {
-          document.getElementById('lcdResult').innerText = "Error: Division by 0";
+      if (inputString.includes('/')) {
+        const parts = inputString.split('/');
+        if (!parts[0] || !parts[1]) {
+          showError();
           return;
         }
 
-        const num2 = w2 * d2 + n2;
+        const [n1, d1] = decimalToFraction(parts[0]);
+        const [n2, d2] = decimalToFraction(parts[1]);
 
-        if (currentOp === '+') { totalNum = totalNum * d2 + num2 * totalDen; totalDen = totalDen * d2; }
-        if (currentOp === '-') { totalNum = totalNum * d2 - num2 * totalDen; totalDen = totalDen * d2; }
-        if (currentOp === '×') { totalNum = totalNum * num2; totalDen = totalDen * d2; }
-        if (currentOp === '÷') { totalNum = totalNum * d2; totalDen = totalDen * num2; }
-      }
-
-      const common = gcd(totalNum, totalDen);
-      let simpNum = totalNum / common;
-      let simpDen = totalDen / common;
-
-      let mainOutput = "";
-
-      if (simpNum >= simpDen) {
-        const whole = Math.floor(simpNum / simpDen);
-        const rem = simpNum % simpDen;
-        mainOutput = rem === 0 ? `${whole}` : `${whole} ${rem}/${simpDen}`;
-      } else if (useAncientScale && base > 1) {
-        const scaledTotal = simpNum * base;
-        const wholeSub = Math.floor(scaledTotal / simpDen);
-        const remSub = scaledTotal % simpDen;
-        const subCommon = gcd(remSub, simpDen);
-
-        const label = base === 60 ? "Ghatis/Mins" : base === 360 ? "°" : "Hrs";
-        
-        mainOutput = remSub === 0 ? `${wholeSub} ${label}` : `${wholeSub} ${remSub/subCommon}/${simpDen/subCommon} ${label}`;
+        num = n1 * d2;
+        den = d1 * n2;
+      } else if (inputString.includes('.')) {
+        [num, den] = decimalToFraction(inputString);
       } else {
-        mainOutput = `${simpNum}/${simpDen}`;
+        num = parseInt(inputString, 10);
+        den = 1;
       }
 
-      document.getElementById('lcdResult').innerText = `Result = ${mainOutput}`;
+      if (isNaN(num) || isNaN(den) || den === 0) {
+        showError();
+        return;
+      }
+
+      const whole = Math.floor(num / den);
+      const remNumerator = num % den;
+
+      if (remNumerator === 0) {
+        document.getElementById('display-screen').innerHTML = `<div class="mixed-number"><span class="whole-part">${whole}</span></div>`;
+        lastCalculatedText = `${whole}`;
+        renderVisualCircles(whole, 0, 1);
+        return;
+      }
+
+      const divisor = gcd(remNumerator, den);
+      const simpNum = remNumerator / divisor;
+      const simpDen = den / divisor;
+
+      if (whole === 0) {
+        document.getElementById('display-screen').innerHTML = `
+          <div class="mixed-number">
+            <div class="fraction-part">
+              <div class="numerator">${simpNum}</div>
+              <div class="denominator">${simpDen}</div>
+            </div>
+          </div>`;
+        lastCalculatedText = `${simpNum}/${simpDen}`;
+        renderVisualCircles(0, simpNum, simpDen);
+        return;
+      }
+
+      document.getElementById('display-screen').innerHTML = `
+        <div class="mixed-number">
+          <span class="whole-part">${whole}</span>
+          <div class="fraction-part">
+            <div class="numerator">${simpNum}</div>
+            <div class="denominator">${simpDen}</div>
+          </div>
+        </div>`;
+      lastCalculatedText = `${whole} ${simpNum}/${simpDen}`;
+      renderVisualCircles(whole, simpNum, simpDen);
     }
 
-    calculate();
+    /* Draw Visual Blue Pie Charts for Students */
+    function renderVisualCircles(whole, num, den) {
+      const visualContainer = document.getElementById('visual-area');
+      visualContainer.innerHTML = '';
+
+      // Limit drawing to 4 whole circles max to fit cleanly on screen
+      const maxWholeCircles = Math.min(whole, 4);
+
+      for (let i = 0; i < maxWholeCircles; i++) {
+        visualContainer.appendChild(createCircleCanvas(den, den));
+      }
+
+      if (num > 0 && maxWholeCircles < 4) {
+        visualContainer.appendChild(createCircleCanvas(num, den));
+      }
+    }
+
+    function createCircleCanvas(num, den) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 60;
+      canvas.height = 60;
+      const ctx = canvas.getContext('2d');
+      const centerX = 30;
+      const centerY = 30;
+      const radius = 26;
+
+      // Draw Base Background Circle
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = '#e4e6eb';
+      ctx.fill();
+
+      // Draw Filled Blue Slices
+      if (num > 0) {
+        const sliceAngle = (2 * Math.PI) / den;
+        for (let i = 0; i < num; i++) {
+          const startAngle = i * sliceAngle - Math.PI / 2;
+          const endAngle = startAngle + sliceAngle;
+
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+          ctx.closePath();
+          ctx.fillStyle = '#007aff';
+          ctx.fill();
+        }
+      }
+
+      // Draw Division Lines and Outline
+      const sliceAngle = (2 * Math.PI) / den;
+      for (let i = 0; i < den; i++) {
+        const angle = i * sliceAngle - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#0056b3';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      return canvas;
+    }
+
+    function showError() {
+      document.getElementById('display-screen').innerHTML = `<span class="input-text">Error</span>`;
+      document.getElementById('visual-area').innerHTML = '';
+      lastCalculatedText = "Error";
+    }
+
+    function shareResult() {
+      const textToShare = lastCalculatedText || inputString;
+      if (!textToShare) {
+        alert("Nothing to share yet!");
+        return;
+      }
+
+      if (navigator.share) {
+        navigator.share({
+          title: 'Fraction Calculation',
+          text: `Fraction Result: ${textToShare}`
+        }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(textToShare).then(() => {
+          alert(`Copied to clipboard: ${textToShare}`);
+        });
+      }
+    }
   </script>
 </body>
 </html>
