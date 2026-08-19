@@ -33,11 +33,11 @@
       border: 2px solid #4a94a5;
       border-radius: 8px;
       padding: 12px 16px;
-      min-height: 120px;
+      min-height: 110px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       box-shadow: inset 0 2px 6px rgba(0,0,0,0.25);
     }
 
@@ -81,7 +81,7 @@
       justify-content: flex-end;
       align-items: center;
       width: 100%;
-      min-height: 70px;
+      min-height: 60px;
     }
 
     .input-text {
@@ -91,7 +91,7 @@
       letter-spacing: -0.5px;
     }
 
-    /* Extra-Large, Sharp Typography */
+    /* Extra-Large Typography */
     .mixed-number {
       display: inline-flex;
       align-items: center;
@@ -100,7 +100,7 @@
     }
     
     .whole-part {
-      font-size: 5rem;
+      font-size: 4.2rem;
       font-weight: 900;
       letter-spacing: -2px;
       margin-right: 8px;
@@ -112,7 +112,7 @@
       flex-direction: column;
       align-items: center;
       vertical-align: middle;
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 800;
     }
     
@@ -129,19 +129,19 @@
       width: 100%;
     }
 
-    /* Visual Circle Representation Styling */
+    /* Blue Visual Container */
     .visual-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
       background: #ffffff;
       border: 1px solid #ccd0d5;
       border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 16px;
-      min-height: 80px;
+      padding: 10px;
+      margin-bottom: 12px;
+      min-height: 70px;
     }
 
     /* Keypad Styling */
@@ -204,10 +204,8 @@
       </div>
     </div>
 
-    <!-- Blue Circle Visual Fraction Container -->
-    <div class="visual-container" id="visual-area">
-      <!-- Generated blue pie charts appear here -->
-    </div>
+    <!-- Blue Visual Area -->
+    <div class="visual-container" id="visual-area"></div>
 
     <div class="keypad">
       <button onclick="press('7')">7</button>
@@ -347,39 +345,35 @@
       renderVisualCircles(whole, simpNum, simpDen);
     }
 
-    /* Draw Visual Blue Pie Charts for Students */
     function renderVisualCircles(whole, num, den) {
       const visualContainer = document.getElementById('visual-area');
       visualContainer.innerHTML = '';
 
-      // Limit drawing to 4 whole circles max to fit cleanly on screen
-      const maxWholeCircles = Math.min(whole, 4);
+      const maxWholeCircles = Math.min(whole, 3);
 
       for (let i = 0; i < maxWholeCircles; i++) {
         visualContainer.appendChild(createCircleCanvas(den, den));
       }
 
-      if (num > 0 && maxWholeCircles < 4) {
+      if (num > 0 && maxWholeCircles < 3) {
         visualContainer.appendChild(createCircleCanvas(num, den));
       }
     }
 
     function createCircleCanvas(num, den) {
       const canvas = document.createElement('canvas');
-      canvas.width = 60;
-      canvas.height = 60;
+      canvas.width = 50;
+      canvas.height = 50;
       const ctx = canvas.getContext('2d');
-      const centerX = 30;
-      const centerY = 30;
-      const radius = 26;
+      const centerX = 25;
+      const centerY = 25;
+      const radius = 22;
 
-      // Draw Base Background Circle
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
       ctx.fillStyle = '#e4e6eb';
       ctx.fill();
 
-      // Draw Filled Blue Slices
       if (num > 0) {
         const sliceAngle = (2 * Math.PI) / den;
         for (let i = 0; i < num; i++) {
@@ -395,7 +389,6 @@
         }
       }
 
-      // Draw Division Lines and Outline
       const sliceAngle = (2 * Math.PI) / den;
       for (let i = 0; i < den; i++) {
         const angle = i * sliceAngle - Math.PI / 2;
