@@ -134,14 +134,14 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
       background: #ffffff;
       border: 1px solid #ccd0d5;
       border-radius: 8px;
       padding: 10px;
       margin-bottom: 12px;
-      min-height: 70px;
+      min-height: 75px;
     }
 
     /* Keypad Styling */
@@ -345,6 +345,7 @@
       renderVisualCircles(whole, simpNum, simpDen);
     }
 
+    /* Pure SVG Circle Renderer */
     function renderVisualCircles(whole, num, den) {
       const visualContainer = document.getElementById('visual-area');
       visualContainer.innerHTML = '';
@@ -352,61 +353,88 @@
       const maxWholeCircles = Math.min(whole, 3);
 
       for (let i = 0; i < maxWholeCircles; i++) {
-        visualContainer.appendChild(createCircleCanvas(den, den));
+        visualContainer.appendChild(createSvgCircle(den, den));
       }
 
       if (num > 0 && maxWholeCircles < 3) {
-        visualContainer.appendChild(createCircleCanvas(num, den));
+        visualContainer.appendChild(createSvgCircle(num, den));
       }
     }
 
-    function createCircleCanvas(num, den) {
-      const canvas = document.createElement('canvas');
-      canvas.width = 50;
-      canvas.height = 50;
-      const ctx = canvas.getContext('2d');
-      const centerX = 25;
-      const centerY = 25;
-      const radius = 22;
+    function createSvgCircle(num, den) {
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("width", "50");
+      svg.setAttribute("height", "50");
+      svg.setAttribute("viewBox", "0 0 60 60");
 
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = '#e4e6eb';
-      ctx.fill();
+      const cx = 30, cy = 30, r = 26;
 
-      if (num > 0) {
+      // Base circle
+      const baseCircle = document.createElementNS(svgNS, "circle");
+      baseCircle.setAttribute("cx", cx);
+      baseCircle.setAttribute("cy", cy);
+      baseCircle.setAttribute("r", r);
+      baseCircle.setAttribute("fill", "#e4e6eb");
+      svg.appendChild(baseCircle);
+
+      // Blue Slices
+      if (num === den) {
+        const fullCircle = document.createElementNS(svgNS, "circle");
+        fullCircle.setAttribute("cx", cx);
+        fullCircle.setAttribute("cy", cy);
+        fullCircle.setAttribute("r", r);
+        fullCircle.setAttribute("fill", "#007aff");
+        svg.appendChild(fullCircle);
+      } else if (num > 0) {
         const sliceAngle = (2 * Math.PI) / den;
         for (let i = 0; i < num; i++) {
           const startAngle = i * sliceAngle - Math.PI / 2;
           const endAngle = startAngle + sliceAngle;
 
-          ctx.beginPath();
-          ctx.moveTo(centerX, centerY);
-          ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-          ctx.closePath();
-          ctx.fillStyle = '#007aff';
-          ctx.fill();
+          const x1 = cx + r * Math.cos(startAngle);
+          const y1 = cy + r * Math.sin(startAngle);
+          const x2 = cx + r * Math.cos(endAngle);
+          const y2 = cy + r * Math.sin(endAngle);
+
+          const largeArcFlag = sliceAngle > Math.PI ? 1 : 0;
+
+          const path = document.createElementNS(svgNS, "path");
+          const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+          path.setAttribute("d", d);
+          path.setAttribute("fill", "#007aff");
+          svg.appendChild(path);
         }
       }
 
+      // Divider lines
       const sliceAngle = (2 * Math.PI) / den;
       for (let i = 0; i < den; i++) {
         const angle = i * sliceAngle - Math.PI / 2;
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.lineTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        const x2 = cx + r * Math.cos(angle);
+        const y2 = cy + r * Math.sin(angle);
+
+        const line = document.createElementNS(svgNS, "line");
+        line.setAttribute("x1", cx);
+        line.setAttribute("y1", cy);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+        line.setAttribute("stroke", "#ffffff");
+        line.setAttribute("stroke-width", "1.5");
+        svg.appendChild(line);
       }
 
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-      ctx.strokeStyle = '#0056b3';
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      // Outer border
+      const borderCircle = document.createElementNS(svgNS, "circle");
+      borderCircle.setAttribute("cx", cx);
+      borderCircle.setAttribute("cy", cy);
+      borderCircle.setAttribute("r", r);
+      borderCircle.setAttribute("fill", "none");
+      borderCircle.setAttribute("stroke", "#0056b3");
+      borderCircle.setAttribute("stroke-width", "2");
+      svg.appendChild(borderCircle);
 
-      return canvas;
+      return svg;
     }
 
     function showError() {
