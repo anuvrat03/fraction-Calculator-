@@ -1,468 +1,323 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fraction Calculator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fraction Calculator with Visual Pie Chart</title>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
+    /* Global page styling to center the app on screen */
     body {
+      background-color: #121212;
+      font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background-color: #1a1a1a;
       margin: 0;
-      padding: 20px 0;
     }
-    .converter-card {
-      background: #e6e8eb;
+
+    /* Calculator container styled like a handheld device */
+    .calculator {
+      background: #e6e6e6;
+      border-radius: 24px;
       padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-      width: 100%;
-      max-width: 360px;
+      width: 320px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     }
-    
-    /* Screen Display Container */
-    .screen-container {
-      background: #73b8c8;
-      border: 2px solid #4a94a5;
-      border-radius: 8px;
-      padding: 12px 16px;
-      min-height: 110px;
+
+    /* Display area matching the teal color scheme */
+    .display-screen {
+      background-color: #63b3c0;
+      border-radius: 12px;
+      padding: 12px;
+      height: 110px;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      margin-bottom: 12px;
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.25);
+      position: relative;
+      border: 2px solid #4a98a5;
     }
 
-    /* Screen Top Bar */
-    .screen-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      height: 24px;
+    /* Title text inside top-left display */
+    .display-header {
+      font-size: 11px;
+      font-weight: bold;
+      color: #1a3c40;
+      letter-spacing: 0.5px;
     }
-    .app-title {
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #1a3c45;
-      text-transform: uppercase;
-    }
+
+    /* Share button positioned at top-right display */
     .share-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
       background: none;
       border: none;
+      font-size: 18px;
       cursor: pointer;
-      padding: 2px;
-      display: flex;
-      align-items: center;
-      color: #1a3c45;
-      box-shadow: none;
-    }
-    .share-btn:active {
-      opacity: 0.6;
-      background: none;
-    }
-    .share-btn svg {
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
+      color: #1a3c40;
     }
 
-    .display-body {
+    /* Container holding the pie chart and output text */
+    .output-container {
       display: flex;
-      justify-content: flex-end;
       align-items: center;
-      width: 100%;
-      min-height: 60px;
+      justify-content: space-between;
+      height: 65px;
     }
 
-    .input-text {
-      font-size: 2.2rem;
+    /* Canvas element for rendering high-contrast pie chart */
+    #pieCanvas {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      display: none; /* Hidden until user presses equals */
+    }
+
+    /* Calculated output text displaying fractions/values */
+    .text-output {
+      font-size: 26px;
+      font-weight: bold;
       color: #000;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-
-    /* Typography */
-    .mixed-number {
-      display: inline-flex;
-      align-items: center;
-      color: #000;
-      line-height: 1;
-    }
-    
-    .whole-part {
-      font-size: 4.2rem;
-      font-weight: 900;
-      letter-spacing: -2px;
-      margin-right: 8px;
-      -webkit-font-smoothing: antialiased;
-    }
-    
-    .fraction-part {
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      vertical-align: middle;
-      font-size: 1.6rem;
-      font-weight: 800;
-    }
-    
-    .numerator {
-      border-bottom: 3px solid #000;
-      padding: 0 4px 1px 4px;
-      text-align: center;
+      text-align: right;
       width: 100%;
-    }
-    
-    .denominator {
-      padding: 1px 4px 0 4px;
-      text-align: center;
-      width: 100%;
+      word-break: break-all;
     }
 
-    /* Blue Visual Container */
-    .visual-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      background: #ffffff;
-      border: 1px solid #ccd0d5;
-      border-radius: 8px;
-      padding: 10px;
-      margin-bottom: 12px;
-      min-height: 75px;
-    }
-
-    /* Keypad Styling */
+    /* Grid layout for standard calculator keys */
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 12px;
+      margin-top: 20px;
     }
-    button {
-      padding: 14px;
-      font-size: 1.3rem;
-      font-weight: 700;
-      border: 1px solid #b5b8bc;
-      border-radius: 8px;
-      background: linear-gradient(180deg, #ffffff 0%, #d8dcd0 100%);
-      color: #111;
+
+    /* Standard button styling */
+    .btn {
+      background: #f0f0e8;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #222;
       cursor: pointer;
-      box-shadow: 0 3px 0 #a2a6ab, 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px #c2c2ba;
+      user-select: none;
     }
-    button:active {
-      transform: translateY(2px);
-      box-shadow: 0 1px 0 #a2a6ab, 0 2px 3px rgba(0,0,0,0.1);
+
+    .btn:active {
+      box-shadow: 0 1px #c2c2ba;
+      transform: translateY(3px);
     }
-    button.op-btn {
-      background: linear-gradient(180deg, #e4edfd 0%, #b5cef7 100%);
-      color: #003670;
-      border-color: #9cbce8;
-      box-shadow: 0 3px 0 #85a8da;
+
+    /* Clear key button styling */
+    .btn-clear {
+      background: #fcd0d0;
+      color: #a00;
+      box-shadow: 0 4px #e0a8a8;
     }
-    button.clear-btn {
-      background: linear-gradient(180deg, #fde4e4 0%, #f7b5b5 100%);
-      color: #8c0000;
-      border-color: #e89c9c;
-      box-shadow: 0 3px 0 #da8585;
+
+    /* Operator key button styling */
+    .btn-op {
+      background: #cbdcfc;
+      color: #002b66;
+      box-shadow: 0 4px #a3beed;
     }
-    button.equals-btn {
-      grid-column: span 1;
-      background: linear-gradient(180deg, #ffa41b 0%, #e07b00 100%);
+
+    /* Equals key button styling */
+    .btn-equal {
+      background: #f08c00;
       color: #fff;
-      border-color: #c96f00;
-      box-shadow: 0 3px 0 #b06100;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      box-shadow: 0 4px #b86b00;
     }
   </style>
 </head>
 <body>
 
-  <div class="converter-card">
-    <div class="screen-container">
-      <div class="screen-header">
-        <span class="app-title">Fraction Calculator</span>
-        <button class="share-btn" onclick="shareResult()" title="Share Result">
-          <svg viewBox="0 0 24 24">
-            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
-          </svg>
-        </button>
-      </div>
-      <div class="display-body" id="display-screen">
-        <span class="input-text"></span>
-      </div>
-    </div>
-
-    <!-- Blue Visual Area -->
-    <div class="visual-container" id="visual-area"></div>
-
-    <div class="keypad">
-      <button onclick="press('7')">7</button>
-      <button onclick="press('8')">8</button>
-      <button onclick="press('9')">9</button>
-
-      <button onclick="press('4')">4</button>
-      <button onclick="press('5')">5</button>
-      <button onclick="press('6')">6</button>
-
-      <button onclick="press('1')">1</button>
-      <button onclick="press('2')">2</button>
-      <button onclick="press('3')">3</button>
-
-      <button class="clear-btn" onclick="clearAll()">C</button>
-      <button onclick="press('0')">0</button>
-      <button class="op-btn" onclick="backspace()">⌫</button>
-
-      <button class="op-btn" onclick="press('.')">.</button>
-      <button class="op-btn" onclick="press('/')">/</button>
-      <button class="equals-btn" onclick="calculate()">=</button>
+<div class="calculator">
+  <!-- Calculator Screen Display -->
+  <div class="display-screen">
+    <div class="display-header">FRACTION CALCULATOR</div>
+    <button class="share-btn" onclick="shareResult()" title="Share Result">🔗</button>
+    
+    <div class="output-container">
+      <!-- High Contrast Pie Chart Canvas -->
+      <canvas id="pieCanvas" width="55" height="55"></canvas>
+      <!-- Fractional Value Output Text -->
+      <div class="text-output" id="display">0</div>
     </div>
   </div>
 
-  <script>
-    let inputString = "";
-    let lastCalculatedText = "";
+  <!-- Calculator Keypad Layout -->
+  <div class="keypad">
+    <button class="btn" onclick="press('7')">7</button>
+    <button class="btn" onclick="press('8')">8</button>
+    <button class="btn" onclick="press('9')">9</button>
 
-    function press(val) {
-      if (val === '/') {
-        if (inputString === "" || inputString.includes('/')) return;
+    <button class="btn" onclick="press('4')">4</button>
+    <button class="btn" onclick="press('5')">5</button>
+    <button class="btn" onclick="press('6')">6</button>
+
+    <button class="btn" onclick="press('1')">1</button>
+    <button class="btn" onclick="press('2')">2</button>
+    <button class="btn" onclick="press('3')">3</button>
+
+    <button class="btn btn-clear" onclick="clearDisplay()">C</button>
+    <button class="btn" onclick="press('0')">0</button>
+    <button class="btn btn-op" onclick="backspace()">⌫</button>
+
+    <button class="btn btn-op" onclick="press('.')">.</button>
+    <button class="btn btn-op" onclick="press('/')">/</button>
+    <button class="btn btn-equal" onclick="calculate()">=</button>
+  </div>
+</div>
+
+<script>
+  // Variables to hold input sequence and last result text
+  let currentInput = "";
+  let lastResultText = "";
+
+  // Append clicked digit or operator to input sequence
+  function press(key) {
+    currentInput += key;
+    document.getElementById("display").innerText = currentInput;
+  }
+
+  // Clear display screen and reset calculator state
+  function clearDisplay() {
+    currentInput = "";
+    lastResultText = "0";
+    document.getElementById("display").innerText = "0";
+    document.getElementById("pieCanvas").style.display = "none";
+  }
+
+  // Remove the last entered character from display
+  function backspace() {
+    currentInput = currentInput.slice(0, -1);
+    document.getElementById("display").innerText = currentInput || "0";
+  }
+
+  // Process input expression, convert result to fraction, and render pie chart
+  function calculate() {
+    try {
+      if (!currentInput) return;
+
+      // Safe mathematical evaluation of typed string
+      let evaluatedValue = eval(currentInput);
+
+      if (isNaN(evaluatedValue) || !isFinite(evaluatedValue)) {
+        document.getElementById("display").innerText = "Error";
+        return;
       }
-      if (val === '.') {
-        const parts = inputString.split('/');
-        const currentPart = parts[parts.length - 1];
-        if (currentPart.includes('.')) return;
-      }
-      inputString += val;
-      renderInput();
+
+      // Format decimal output into fraction text
+      let fractionText = decimalToFraction(evaluatedValue);
+      lastResultText = fractionText;
+      document.getElementById("display").innerText = fractionText;
+
+      // Render chart with high-contrast blue circle and yellow slice
+      renderPieChart(evaluatedValue);
+
+    } catch (e) {
+      document.getElementById("display").innerText = "Error";
     }
+  }
 
-    function backspace() {
-      inputString = inputString.slice(0, -1);
-      renderInput();
+  // Helper function converting decimal values into proper/mixed fractions
+  function decimalToFraction(val) {
+    if (Number.isInteger(val)) return val.toString();
+
+    let wholePart = Math.floor(Math.abs(val));
+    let decimalPart = Math.abs(val) - wholePart;
+
+    // Greatest common divisor helper
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+
+    let precision = 10000;
+    let num = Math.round(decimalPart * precision);
+    let den = precision;
+    let common = gcd(num, den);
+
+    num = num / common;
+    den = den / common;
+
+    let sign = val < 0 ? "-" : "";
+    if (wholePart === 0) {
+      return `${sign}${num}/${den}`;
+    } else {
+      return `${sign}${wholePart} ${num}/${den}`;
     }
+  }
 
-    function clearAll() {
-      inputString = "";
-      lastCalculatedText = "";
-      document.getElementById('display-screen').innerHTML = `<span class="input-text"></span>`;
-      document.getElementById('visual-area').innerHTML = "";
-    }
+  // Draws high-contrast dynamic pie chart (Deep Blue Circle + Bright Yellow Slice)
+  function renderPieChart(value) {
+    let canvas = document.getElementById("pieCanvas");
+    let ctx = canvas.getContext("2d");
+    canvas.style.display = "block";
 
-    function renderInput() {
-      document.getElementById('display-screen').innerHTML = `<span class="input-text">${inputString}</span>`;
-    }
+    let width = canvas.width;
+    let height = canvas.height;
+    let radius = width / 2;
 
-    function gcd(a, b) {
-      return b === 0 ? a : gcd(b, a % b);
-    }
+    // Clear previous drawing frame
+    ctx.clearRect(0, 0, width, height);
 
-    function decimalToFraction(val) {
-      if (!val.includes('.')) {
-        return [parseInt(val, 10), 1];
-      }
-      const decPlaces = val.split('.')[1].length;
-      const den = Math.pow(10, decPlaces);
-      const num = Math.round(parseFloat(val) * den);
-      return [num, den];
-    }
+    // Compute fractional angle percentage
+    let fractionRemainder = Math.abs(value) % 1;
+    if (fractionRemainder === 0) fractionRemainder = 1; // Full circle for integers
 
-    function calculate() {
-      if (!inputString) return;
+    let sliceAngle = fractionRemainder * 2 * Math.PI;
 
-      let num, den;
+    // Step 1: Draw high-contrast deep blue circle background
+    ctx.beginPath();
+    ctx.moveTo(radius, radius);
+    ctx.arc(radius, radius, radius, 0, 2 * Math.PI);
+    ctx.fillStyle = "#1d3557"; // Deep royal blue circle base
+    ctx.fill();
 
-      if (inputString.includes('/')) {
-        const parts = inputString.split('/');
-        if (!parts[0] || !parts[1]) {
-          showError();
-          return;
+    // Step 2: Draw vibrant bright yellow slice for fraction visual
+    ctx.beginPath();
+    ctx.moveTo(radius, radius);
+    ctx.arc(radius, radius, radius, -Math.PI / 2, -Math.PI / 2 + sliceAngle);
+    ctx.closePath();
+    ctx.fillStyle = "#ffb703"; // Bright vivid yellow pie slice
+    ctx.fill();
+  }
+
+  // Web Share API to share image canvas and fraction text
+  async function shareResult() {
+    let canvas = document.getElementById("pieCanvas");
+    let textToShare = `Fraction Result: ${lastResultText || '0'}`;
+
+    if (navigator.share) {
+      try {
+        if (canvas.style.display !== "none") {
+          // Export canvas pie chart to PNG image file for sharing
+          canvas.toBlob(async (blob) => {
+            let file = new File([blob], "fraction_chart.png", { type: "image/png" });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: 'Fraction Calculator Result',
+                text: textToShare,
+                files: [file]
+              });
+            } else {
+              await navigator.share({ title: 'Fraction Calculator Result', text: textToShare });
+            }
+          });
+        } else {
+          await navigator.share({ title: 'Fraction Calculator Result', text: textToShare });
         }
-
-        const [n1, d1] = decimalToFraction(parts[0]);
-        const [n2, d2] = decimalToFraction(parts[1]);
-
-        num = parseInt(n1 * d2, 10);
-        den = parseInt(d1 * n2, 10);
-      } else if (inputString.includes('.')) {
-        const [n, d] = decimalToFraction(inputString);
-        num = parseInt(n, 10);
-        den = parseInt(d, 10);
-      } else {
-        num = parseInt(inputString, 10);
-        den = 1;
+      } catch (err) {
+        console.log("Sharing cancelled or unsupported");
       }
-
-      if (isNaN(num) || isNaN(den) || den === 0) {
-        showError();
-        return;
-      }
-
-      const whole = Math.floor(num / den);
-      const remNumerator = num % den;
-
-      if (remNumerator === 0) {
-        document.getElementById('display-screen').innerHTML = `<div class="mixed-number"><span class="whole-part">${whole}</span></div>`;
-        lastCalculatedText = `${whole}`;
-        renderVisualCircles(whole, 0, 1);
-        return;
-      }
-
-      const divisor = gcd(remNumerator, den);
-      const simpNum = parseInt(remNumerator / divisor, 10);
-      const simpDen = parseInt(den / divisor, 10);
-
-      if (whole === 0) {
-        document.getElementById('display-screen').innerHTML = `
-          <div class="mixed-number">
-            <div class="fraction-part">
-              <div class="numerator">${simpNum}</div>
-              <div class="denominator">${simpDen}</div>
-            </div>
-          </div>`;
-        lastCalculatedText = `${simpNum}/${simpDen}`;
-        renderVisualCircles(0, simpNum, simpDen);
-        return;
-      }
-
-      document.getElementById('display-screen').innerHTML = `
-        <div class="mixed-number">
-          <span class="whole-part">${whole}</span>
-          <div class="fraction-part">
-            <div class="numerator">${simpNum}</div>
-            <div class="denominator">${simpDen}</div>
-          </div>
-        </div>`;
-      lastCalculatedText = `${whole} ${simpNum}/${simpDen}`;
-      renderVisualCircles(whole, simpNum, simpDen);
+    } else {
+      alert(`Sharing Result:\n${textToShare}`);
     }
+  }
+</script>
 
-    /* SVG Circle Renderer */
-    function renderVisualCircles(whole, num, den) {
-      const visualContainer = document.getElementById('visual-area');
-      visualContainer.innerHTML = '';
-
-      const maxWholeCircles = Math.min(whole, 3);
-
-      for (let i = 0; i < maxWholeCircles; i++) {
-        visualContainer.appendChild(createSvgCircle(den, den));
-      }
-
-      if (num > 0 && maxWholeCircles < 3) {
-        visualContainer.appendChild(createSvgCircle(num, den));
-      }
-    }
-
-    function createSvgCircle(num, den) {
-      const svgNS = "http://www.w3.org/2000/svg";
-      const svg = document.createElementNS(svgNS, "svg");
-      svg.setAttribute("width", "50");
-      svg.setAttribute("height", "50");
-      svg.setAttribute("viewBox", "0 0 60 60");
-
-      const cx = 30, cy = 30, r = 25;
-
-      // Gray Background Base
-      const baseCircle = document.createElementNS(svgNS, "circle");
-      baseCircle.setAttribute("cx", cx);
-      baseCircle.setAttribute("cy", cy);
-      baseCircle.setAttribute("r", r);
-      baseCircle.setAttribute("fill", "#e4e6eb");
-      svg.appendChild(baseCircle);
-
-      // Blue Filled Slices
-      if (num === den) {
-        const fullCircle = document.createElementNS(svgNS, "circle");
-        fullCircle.setAttribute("cx", cx);
-        fullCircle.setAttribute("cy", cy);
-        fullCircle.setAttribute("r", r);
-        fullCircle.setAttribute("fill", "#007aff");
-        svg.appendChild(fullCircle);
-      } else if (num > 0) {
-        const sliceAngle = (2 * Math.PI) / den;
-        for (let i = 0; i < num; i++) {
-          const startAngle = i * sliceAngle - Math.PI / 2;
-          const endAngle = startAngle + sliceAngle;
-
-          const x1 = cx + r * Math.cos(startAngle);
-          const y1 = cy + r * Math.sin(startAngle);
-          const x2 = cx + r * Math.cos(endAngle);
-          const y2 = cy + r * Math.sin(endAngle);
-
-          const largeArcFlag = sliceAngle > Math.PI ? 1 : 0;
-
-          const path = document.createElementNS(svgNS, "path");
-          const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
-          path.setAttribute("d", d);
-          path.setAttribute("fill", "#007aff");
-          svg.appendChild(path);
-        }
-      }
-
-      // White Slice Dividers
-      const sliceAngle = (2 * Math.PI) / den;
-      for (let i = 0; i < den; i++) {
-        const angle = i * sliceAngle - Math.PI / 2;
-        const x2 = cx + r * Math.cos(angle);
-        const y2 = cy + r * Math.sin(angle);
-
-        const line = document.createElementNS(svgNS, "line");
-        line.setAttribute("x1", cx);
-        line.setAttribute("y1", cy);
-        line.setAttribute("x2", x2);
-        line.setAttribute("y2", y2);
-        line.setAttribute("stroke", "#ffffff");
-        line.setAttribute("stroke-width", "1.5");
-        svg.appendChild(line);
-      }
-
-      // Blue Outline
-      const borderCircle = document.createElementNS(svgNS, "circle");
-      borderCircle.setAttribute("cx", cx);
-      borderCircle.setAttribute("cy", cy);
-      borderCircle.setAttribute("r", r);
-      borderCircle.setAttribute("fill", "none");
-      borderCircle.setAttribute("stroke", "#0056b3");
-      borderCircle.setAttribute("stroke-width", "2");
-      svg.appendChild(borderCircle);
-
-      return svg;
-    }
-
-    function showError() {
-      document.getElementById('display-screen').innerHTML = `<span class="input-text">Error</span>`;
-      document.getElementById('visual-area').innerHTML = '';
-      lastCalculatedText = "Error";
-    }
-
-    function shareResult() {
-      const textToShare = lastCalculatedText || inputString;
-      if (!textToShare) {
-        alert("Nothing to share yet!");
-        return;
-      }
-
-      if (navigator.share) {
-        navigator.share({
-          title: 'Fraction Calculation',
-          text: `Fraction Result: ${textToShare}`
-        }).catch(() => {});
-      } else {
-        navigator.clipboard.writeText(textToShare).then(() => {
-          alert(`Copied to clipboard: ${textToShare}`);
-        });
-      }
-    }
-  </script>
 </body>
 </html>
