@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fraction Calculator with Visual Pie Chart</title>
+  <title>Fraction Calculator - Mixed Fractions & Dark Pie Borders</title>
   <style>
-    /* Global page styling to center the app on screen */
+    /* Main body background layout */
     body {
       background-color: #121212;
       font-family: Arial, sans-serif;
@@ -16,7 +16,7 @@
       margin: 0;
     }
 
-    /* Calculator container styled like a handheld device */
+    /* Outer calculator enclosure styling */
     .calculator {
       background: #e6e6e6;
       border-radius: 24px;
@@ -25,7 +25,7 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     }
 
-    /* Display area matching the teal color scheme */
+    /* Teal top display window */
     .display-screen {
       background-color: #63b3c0;
       border-radius: 12px;
@@ -39,7 +39,7 @@
       border: 2px solid #4a98a5;
     }
 
-    /* Title text inside top-left display */
+    /* Header title inside display */
     .display-header {
       font-size: 11px;
       font-weight: bold;
@@ -47,7 +47,7 @@
       letter-spacing: 0.5px;
     }
 
-    /* Share button positioned at top-right display */
+    /* Top right link button for sharing */
     .share-btn {
       position: absolute;
       top: 10px;
@@ -59,7 +59,7 @@
       color: #1a3c40;
     }
 
-    /* Container holding the pie chart and output text */
+    /* Content row inside display containing chart and output text */
     .output-container {
       display: flex;
       align-items: center;
@@ -67,15 +67,15 @@
       height: 65px;
     }
 
-    /* Canvas element for rendering high-contrast pie chart */
+    /* Canvas element rendering the pie chart */
     #pieCanvas {
       width: 55px;
       height: 55px;
       border-radius: 50%;
-      display: none; /* Hidden until user presses equals */
+      display: none; /* Hidden until equals is clicked */
     }
 
-    /* Calculated output text displaying fractions/values */
+    /* Mixed fraction display text */
     .text-output {
       font-size: 26px;
       font-weight: bold;
@@ -85,7 +85,7 @@
       word-break: break-all;
     }
 
-    /* Grid layout for standard calculator keys */
+    /* Calculator keypad layout grid */
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -93,7 +93,7 @@
       margin-top: 20px;
     }
 
-    /* Standard button styling */
+    /* Generic keypad button style */
     .btn {
       background: #f0f0e8;
       border: 1px solid #ccc;
@@ -112,21 +112,21 @@
       transform: translateY(3px);
     }
 
-    /* Clear key button styling */
+    /* Red clear button */
     .btn-clear {
       background: #fcd0d0;
       color: #a00;
       box-shadow: 0 4px #e0a8a8;
     }
 
-    /* Operator key button styling */
+    /* Light blue function buttons */
     .btn-op {
       background: #cbdcfc;
       color: #002b66;
       box-shadow: 0 4px #a3beed;
     }
 
-    /* Equals key button styling */
+    /* Orange calculation button */
     .btn-equal {
       background: #f08c00;
       color: #fff;
@@ -143,14 +143,14 @@
     <button class="share-btn" onclick="shareResult()" title="Share Result">🔗</button>
     
     <div class="output-container">
-      <!-- High Contrast Pie Chart Canvas -->
+      <!-- Pie Chart Canvas -->
       <canvas id="pieCanvas" width="55" height="55"></canvas>
-      <!-- Fractional Value Output Text -->
+      <!-- Calculated Text Display -->
       <div class="text-output" id="display">0</div>
     </div>
   </div>
 
-  <!-- Calculator Keypad Layout -->
+  <!-- Keypad Buttons -->
   <div class="keypad">
     <button class="btn" onclick="press('7')">7</button>
     <button class="btn" onclick="press('8')">8</button>
@@ -175,17 +175,17 @@
 </div>
 
 <script>
-  // Variables to hold input sequence and last result text
+  // Variables tracking user input and formatted fraction text
   let currentInput = "";
   let lastResultText = "";
 
-  // Append clicked digit or operator to input sequence
+  // Append typed key character to input string
   function press(key) {
     currentInput += key;
     document.getElementById("display").innerText = currentInput;
   }
 
-  // Clear display screen and reset calculator state
+  // Reset calculator display and clear canvas chart
   function clearDisplay() {
     currentInput = "";
     lastResultText = "0";
@@ -193,66 +193,79 @@
     document.getElementById("pieCanvas").style.display = "none";
   }
 
-  // Remove the last entered character from display
+  // Delete last typed character
   function backspace() {
     currentInput = currentInput.slice(0, -1);
     document.getElementById("display").innerText = currentInput || "0";
   }
 
-  // Process input expression, convert result to fraction, and render pie chart
+  // Handle equation evaluation and convert improper fractions into mixed numbers
   function calculate() {
     try {
       if (!currentInput) return;
 
-      // Safe mathematical evaluation of typed string
-      let evaluatedValue = eval(currentInput);
+      let num, den;
 
-      if (isNaN(evaluatedValue) || !isFinite(evaluatedValue)) {
+      // Check if input is direct division format (e.g., 36/11)
+      if (currentInput.includes("/")) {
+        let parts = currentInput.split("/");
+        if (parts.length === 2) {
+          num = parseInt(parts[0]);
+          den = parseInt(parts[1]);
+        } else {
+          document.getElementById("display").innerText = "Error";
+          return;
+        }
+      } else {
+        // Handle whole numbers or standard numbers
+        num = parseInt(currentInput);
+        den = 1;
+      }
+
+      if (isNaN(num) || isNaN(den) || den === 0) {
         document.getElementById("display").innerText = "Error";
         return;
       }
 
-      // Format decimal output into fraction text
-      let fractionText = decimalToFraction(evaluatedValue);
-      lastResultText = fractionText;
-      document.getElementById("display").innerText = fractionText;
+      // Format output text to properly display mixed fractions (e.g., 3 3/11)
+      let mixedFractionText = formatMixedFraction(num, den);
+      lastResultText = mixedFractionText;
+      document.getElementById("display").innerText = mixedFractionText;
 
-      // Render chart with high-contrast blue circle and yellow slice
-      renderPieChart(evaluatedValue);
+      // Draw chart with dark blue outlines for segment clarity
+      renderPieChart(num, den);
 
     } catch (e) {
       document.getElementById("display").innerText = "Error";
     }
   }
 
-  // Helper function converting decimal values into proper/mixed fractions
-  function decimalToFraction(val) {
-    if (Number.isInteger(val)) return val.toString();
+  // Converts improper fraction (e.g., 36/11) to mixed fraction string (e.g., "3 3/11")
+  function formatMixedFraction(numerator, denominator) {
+    let absNum = Math.abs(numerator);
+    let absDen = Math.abs(denominator);
 
-    let wholePart = Math.floor(Math.abs(val));
-    let decimalPart = Math.abs(val) - wholePart;
+    // Calculate whole integer portion and remainder
+    let wholeNumber = Math.floor(absNum / absDen);
+    let remainder = absNum % absDen;
 
-    // Greatest common divisor helper
-    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+    let sign = numerator < 0 ? "-" : "";
 
-    let precision = 10000;
-    let num = Math.round(decimalPart * precision);
-    let den = precision;
-    let common = gcd(num, den);
+    // Return simple whole number if no remainder exists
+    if (remainder === 0) {
+      return `${sign}${wholeNumber}`;
+    }
 
-    num = num / common;
-    den = den / common;
-
-    let sign = val < 0 ? "-" : "";
-    if (wholePart === 0) {
-      return `${sign}${num}/${den}`;
+    // Return mixed fraction format if whole number is greater than 0
+    if (wholeNumber > 0) {
+      return `${sign}${wholeNumber} ${remainder}/${absDen}`;
     } else {
-      return `${sign}${wholePart} ${num}/${den}`;
+      return `${sign}${remainder}/${absDen}`;
     }
   }
 
-  // Draws high-contrast dynamic pie chart (Deep Blue Circle + Bright Yellow Slice)
-  function renderPieChart(value) {
+  // Renders segmented pie chart with dark outlines around every slice
+  function renderPieChart(numerator, denominator) {
     let canvas = document.getElementById("pieCanvas");
     let ctx = canvas.getContext("2d");
     canvas.style.display = "block";
@@ -261,32 +274,39 @@
     let height = canvas.height;
     let radius = width / 2;
 
-    // Clear previous drawing frame
+    // Clear previous drawing
     ctx.clearRect(0, 0, width, height);
 
-    // Compute fractional angle percentage
-    let fractionRemainder = Math.abs(value) % 1;
-    if (fractionRemainder === 0) fractionRemainder = 1; // Full circle for integers
+    // Calculate remainder portion for the visual slice
+    let remainder = Math.abs(numerator) % denominator;
+    let filledSlices = remainder === 0 ? denominator : remainder;
 
-    let sliceAngle = fractionRemainder * 2 * Math.PI;
+    // Draw slices according to denominator division
+    for (let i = 0; i < denominator; i++) {
+      let startAngle = (i / denominator) * 2 * Math.PI - (Math.PI / 2);
+      let endAngle = ((i + 1) / denominator) * 2 * Math.PI - (Math.PI / 2);
 
-    // Step 1: Draw high-contrast deep blue circle background
-    ctx.beginPath();
-    ctx.moveTo(radius, radius);
-    ctx.arc(radius, radius, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = "#1d3557"; // Deep royal blue circle base
-    ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(radius, radius);
+      ctx.arc(radius, radius, radius, startAngle, endAngle);
+      ctx.closePath();
 
-    // Step 2: Draw vibrant bright yellow slice for fraction visual
-    ctx.beginPath();
-    ctx.moveTo(radius, radius);
-    ctx.arc(radius, radius, radius, -Math.PI / 2, -Math.PI / 2 + sliceAngle);
-    ctx.closePath();
-    ctx.fillStyle = "#ffb703"; // Bright vivid yellow pie slice
-    ctx.fill();
+      // Yellow for active numerator slices, Deep Navy for base background
+      if (i < filledSlices) {
+        ctx.fillStyle = "#ffb703"; // Vivid yellow slice
+      } else {
+        ctx.fillStyle = "#1d3557"; // Deep navy blue slice base
+      }
+      ctx.fill();
+
+      // Dark Blue / Black high-contrast borders between slices
+      ctx.strokeStyle = "#0b132b"; // Dark navy margin stroke
+      ctx.lineWidth = 1.5;         // Clear thick slice outline
+      ctx.stroke();
+    }
   }
 
-  // Web Share API to share image canvas and fraction text
+  // Web Share API to share image canvas and calculated mixed fraction
   async function shareResult() {
     let canvas = document.getElementById("pieCanvas");
     let textToShare = `Fraction Result: ${lastResultText || '0'}`;
@@ -294,7 +314,6 @@
     if (navigator.share) {
       try {
         if (canvas.style.display !== "none") {
-          // Export canvas pie chart to PNG image file for sharing
           canvas.toBlob(async (blob) => {
             let file = new File([blob], "fraction_chart.png", { type: "image/png" });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
