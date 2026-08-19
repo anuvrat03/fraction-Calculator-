@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fraction Calculator - Mixed Fractions & Dark Pie Borders</title>
+  <title>Fraction Calculator - Vertical Mixed Fraction Display</title>
   <style>
     /* Main body background layout */
     body {
@@ -75,14 +75,46 @@
       display: none; /* Hidden until equals is clicked */
     }
 
-    /* Mixed fraction display text */
+    /* Outer display wrapper for mathematical alignment */
     .text-output {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      width: 100%;
+      color: #000;
+      font-weight: bold;
+    }
+
+    /* Large whole number typography matching image reference */
+    .whole-number {
+      font-size: 48px;
+      line-height: 1;
+      margin-right: 6px;
+      font-weight: 900;
+    }
+
+    /* Stacked fraction container (Numerator over Denominator) */
+    .fraction-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1.1;
+    }
+
+    /* Horizontal fraction bar */
+    .fraction-bar {
+      border-top: 2.5px solid #000;
+      width: 100%;
+      margin: 1px 0;
+    }
+
+    /* Standard inline entry text prior to calculation */
+    .raw-text {
       font-size: 26px;
       font-weight: bold;
-      color: #000;
-      text-align: right;
-      width: 100%;
-      word-break: break-all;
     }
 
     /* Calculator keypad layout grid */
@@ -143,10 +175,10 @@
     <button class="share-btn" onclick="shareResult()" title="Share Result">🔗</button>
     
     <div class="output-container">
-      <!-- Pie Chart Canvas -->
+      <!-- Dynamic Visual Pie Chart Canvas -->
       <canvas id="pieCanvas" width="55" height="55"></canvas>
-      <!-- Calculated Text Display -->
-      <div class="text-output" id="display">0</div>
+      <!-- Mathematical Output Display Container -->
+      <div class="text-output" id="display"><span class="raw-text">0</span></div>
     </div>
   </div>
 
@@ -175,93 +207,115 @@
 </div>
 
 <script>
-  // Variables tracking user input and formatted fraction text
+  // Variables tracking user input and share text
   let currentInput = "";
-  let lastResultText = "";
+  let shareableText = "";
 
-  // Append typed key character to input string
+  // Append key stroke to typing input
   function press(key) {
     currentInput += key;
-    document.getElementById("display").innerText = currentInput;
+    document.getElementById("display").innerHTML = `<span class="raw-text">${currentInput}</span>`;
   }
 
-  // Reset calculator display and clear canvas chart
+  // Clear screen state and reset canvas
   function clearDisplay() {
     currentInput = "";
-    lastResultText = "0";
-    document.getElementById("display").innerText = "0";
+    shareableText = "0";
+    document.getElementById("display").innerHTML = `<span class="raw-text">0</span>`;
     document.getElementById("pieCanvas").style.display = "none";
   }
 
-  // Delete last typed character
+  // Delete last entered character
   function backspace() {
     currentInput = currentInput.slice(0, -1);
-    document.getElementById("display").innerText = currentInput || "0";
+    document.getElementById("display").innerHTML = `<span class="raw-text">${currentInput || '0'}</span>`;
   }
 
-  // Handle equation evaluation and convert improper fractions into mixed numbers
+  // Primary calculation logic
   function calculate() {
     try {
       if (!currentInput) return;
 
       let num, den;
 
-      // Check if input is direct division format (e.g., 36/11)
+      // Parse fraction input (e.g., 44/12 or 36/11)
       if (currentInput.includes("/")) {
         let parts = currentInput.split("/");
         if (parts.length === 2) {
           num = parseInt(parts[0]);
           den = parseInt(parts[1]);
         } else {
-          document.getElementById("display").innerText = "Error";
+          showError("Error");
           return;
         }
       } else {
-        // Handle whole numbers or standard numbers
+        // Plain integer entry
         num = parseInt(currentInput);
         den = 1;
       }
 
       if (isNaN(num) || isNaN(den) || den === 0) {
-        document.getElementById("display").innerText = "Error";
+        showError("Error");
         return;
       }
 
-      // Format output text to properly display mixed fractions (e.g., 3 3/11)
-      let mixedFractionText = formatMixedFraction(num, den);
-      lastResultText = mixedFractionText;
-      document.getElementById("display").innerText = mixedFractionText;
+      // Render vertical fraction visual layout
+      renderMixedFractionDisplay(num, den);
 
-      // Draw chart with dark blue outlines for segment clarity
+      // Render pie chart with high-contrast borders
       renderPieChart(num, den);
 
     } catch (e) {
-      document.getElementById("display").innerText = "Error";
+      showError("Error");
     }
   }
 
-  // Converts improper fraction (e.g., 36/11) to mixed fraction string (e.g., "3 3/11")
-  function formatMixedFraction(numerator, denominator) {
+  // Show inline error text
+  function showError(msg) {
+    document.getElementById("display").innerHTML = `<span class="raw-text">${msg}</span>`;
+    document.getElementById("pieCanvas").style.display = "none";
+  }
+
+  // Formats output with a huge whole number and vertically stacked fraction
+  function renderMixedFractionDisplay(numerator, denominator) {
     let absNum = Math.abs(numerator);
     let absDen = Math.abs(denominator);
 
-    // Calculate whole integer portion and remainder
     let wholeNumber = Math.floor(absNum / absDen);
     let remainder = absNum % absDen;
-
     let sign = numerator < 0 ? "-" : "";
 
-    // Return simple whole number if no remainder exists
+    let displayHTML = "";
+
     if (remainder === 0) {
-      return `${sign}${wholeNumber}`;
+      // Whole integer result
+      displayHTML = `<span class="whole-number">${sign}${wholeNumber}</span>`;
+      shareableText = `${sign}${wholeNumber}`;
+    } else if (wholeNumber > 0) {
+      // Mixed fraction (Large whole number + Stacked fraction)
+      displayHTML = `
+        <span class="whole-number">${sign}${wholeNumber}</span>
+        <div class="fraction-stack">
+          <div>${remainder}</div>
+          <div class="fraction-bar"></div>
+          <div>${absDen}</div>
+        </div>
+      `;
+      shareableText = `${sign}${wholeNumber} ${remainder}/${absDen}`;
+    } else {
+      // Pure proper fraction (Stacked only)
+      displayHTML = `
+        <span class="whole-number">${sign}</span>
+        <div class="fraction-stack">
+          <div>${remainder}</div>
+          <div class="fraction-bar"></div>
+          <div>${absDen}</div>
+        </div>
+      `;
+      shareableText = `${sign}${remainder}/${absDen}`;
     }
 
-    // Return mixed fraction format if whole number is greater than 0
-    if (wholeNumber > 0) {
-      return `${sign}${wholeNumber} ${remainder}/${absDen}`;
-    } else {
-      return `${sign}${remainder}/${absDen}`;
-    }
+    document.getElementById("display").innerHTML = displayHTML;
   }
 
   // Renders segmented pie chart with dark outlines around every slice
@@ -295,21 +349,21 @@
       if (i < filledSlices) {
         ctx.fillStyle = "#ffb703"; // Vivid yellow slice
       } else {
-        ctx.fillStyle = "#1d3557"; // Deep navy blue slice base
+        ctx.fillStyle = "#1d3557"; // Deep navy blue base
       }
       ctx.fill();
 
       // Dark Blue / Black high-contrast borders between slices
-      ctx.strokeStyle = "#0b132b"; // Dark navy margin stroke
-      ctx.lineWidth = 1.5;         // Clear thick slice outline
+      ctx.strokeStyle = "#0b132b";
+      ctx.lineWidth = 1.5;
       ctx.stroke();
     }
   }
 
-  // Web Share API to share image canvas and calculated mixed fraction
+  // Native Web Share API function
   async function shareResult() {
     let canvas = document.getElementById("pieCanvas");
-    let textToShare = `Fraction Result: ${lastResultText || '0'}`;
+    let textToShare = `Fraction Result: ${shareableText || '0'}`;
 
     if (navigator.share) {
       try {
